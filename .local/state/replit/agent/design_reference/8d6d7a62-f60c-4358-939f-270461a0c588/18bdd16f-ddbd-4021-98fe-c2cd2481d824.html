@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хром Логистика - Система управления заявками</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'primary': '#1976d2',
+                    'primary-dark': '#1565c0',
+                    'secondary': '#388e3c',
+                    'secondary-dark': '#2e7d32',
+                    'surface': '#ffffff',
+                    'background': '#fafafa',
+                    'text-primary': '#212121',
+                    'text-secondary': '#757575',
+                    'status-new': '#2196f3',
+                    'status-processing': '#ff9800',
+                    'status-assigned': '#9c27b0',
+                    'status-transit': '#ff5722',
+                    'status-delivered': '#4caf50',
+                    'status-cancelled': '#f44336'
+                },
+                fontFamily: {
+                    'roboto': ['Roboto', 'sans-serif']
+                },
+                boxShadow: {
+                    'material': '0 2px 4px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+                    'material-lg': '0 8px 16px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)'
+                }
+            }
+        }
+    }
+    </script>
+</head>
+<body class="font-roboto bg-background text-text-primary min-h-screen">
+    
+    <!-- @COMPONENT: AppLayout [main application wrapper] -->
+    <div id="app" class="flex min-h-screen">
+        
+        <!-- @COMPONENT: Sidebar [navigation panel] -->
+        <aside id="sidebar" class="w-60 bg-surface shadow-material-lg flex flex-col fixed h-full z-30 transition-transform duration-300 transform lg:translate-x-0 -translate-x-full">
+            <!-- Logo and Company Name -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <span class="material-icons text-white text-xl">local_shipping</span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-medium text-text-primary">Хром Логистика</h1>
+                        <p class="text-xs text-text-secondary">Система заявок</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="flex-1 py-4">
+                <ul class="space-y-1 px-3">
+                    <li>
+                        <a href="#dashboard" class="flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary text-white shadow-sm" data-nav="dashboard">
+                            <span class="material-icons text-xl">dashboard</span>
+                            <span class="font-medium">Дашборд</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#create" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-gray-100 transition-colors" data-nav="create">
+                            <span class="material-icons text-xl">add_circle</span>
+                            <span class="font-medium">Создать заявку</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#reports" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-gray-100 transition-colors" data-nav="reports">
+                            <span class="material-icons text-xl">assessment</span>
+                            <span class="font-medium">Отчеты</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                        <span class="material-icons text-white text-sm">person</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium" data-bind="user.name">Иван Петров</p>
+                        <p class="text-xs text-text-secondary" data-bind="user.role">Менеджер</p>
+                    </div>
+                    <button class="material-icons text-text-secondary hover:text-text-primary" title="Выйти">
+                        logout
+                    </button>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+        
+        <!-- Mobile sidebar overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"></div>
+        
+        <!-- @COMPONENT: MainContent [main application content area] -->
+        <main class="flex-1 lg:ml-60 min-h-screen">
+            
+            <!-- @COMPONENT: Header [top navigation bar] -->
+            <header class="bg-surface shadow-material px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button id="mobile-menu-btn" class="lg:hidden material-icons text-text-secondary">
+                        menu
+                    </button>
+                    <h2 class="text-xl font-medium text-text-primary" id="page-title">Дашборд заявок</h2>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="material-icons text-text-secondary hover:text-text-primary" title="Уведомления">
+                        notifications_none
+                    </button>
+                    <button class="material-icons text-text-secondary hover:text-text-primary" title="Настройки">
+                        settings
+                    </button>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+            
+            <!-- @COMPONENT: PageContent [dynamic content area] -->
+            <div class="p-6">
+                
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-content">
+                    
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-surface rounded-lg p-6 shadow-material">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-text-secondary text-sm font-medium">Всего заявок</p>
+                                    <p class="text-2xl font-bold text-text-primary" data-bind="stats.total">247</p>
+                                </div>
+                                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-primary">assignment</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface rounded-lg p-6 shadow-material">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-text-secondary text-sm font-medium">В обработке</p>
+                                    <p class="text-2xl font-bold text-text-primary" data-bind="stats.processing">18</p>
+                                </div>
+                                <div class="w-12 h-12 bg-status-processing bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-status-processing">hourglass_empty</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface rounded-lg p-6 shadow-material">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-text-secondary text-sm font-medium">В пути</p>
+                                    <p class="text-2xl font-bold text-text-primary" data-bind="stats.transit">32</p>
+                                </div>
+                                <div class="w-12 h-12 bg-status-transit bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-status-transit">local_shipping</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface rounded-lg p-6 shadow-material">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-text-secondary text-sm font-medium">Доставлено</p>
+                                    <p class="text-2xl font-bold text-text-primary" data-bind="stats.delivered">189</p>
+                                </div>
+                                <div class="w-12 h-12 bg-status-delivered bg-opacity-10 rounded-lg flex items-center justify-center">
+                                    <span class="material-icons text-status-delivered">check_circle</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters and Search -->
+                    <div class="bg-surface rounded-lg p-6 shadow-material mb-6">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                                <div class="relative flex-1 max-w-md">
+                                    <span class="material-icons absolute left-3 top-3 text-text-secondary">search</span>
+                                    <input type="text" placeholder="Поиск по номеру, адресу или грузу..." 
+                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                                           data-mock="true">
+                                </div>
+                                
+                                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" data-mock="true">
+                                    <option value="">Все статусы</option>
+                                    <option value="new">Новая</option>
+                                    <option value="processing">В обработке</option>
+                                    <option value="assigned">Назначен транспорт</option>
+                                    <option value="transit">В пути</option>
+                                    <option value="delivered">Доставлен</option>
+                                    <option value="cancelled">Отменен</option>
+                                </select>
+                                
+                                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" data-mock="true">
+                                    <option value="">Все категории</option>
+                                    <option value="astana">Астана</option>
+                                    <option value="intercity">Междугородний</option>
+                                </select>
+                            </div>
+                            
+                            <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center space-x-2" data-nav="create">
+                                <span class="material-icons">add</span>
+                                <span>Новая заявка</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Shipment Requests Table -->
+                    <div class="bg-surface rounded-lg shadow-material overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">№ Заявки</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Статус</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Категория</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Груз</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Маршрут</th>
+                                        <th class="px-6 py-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Дата создания</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-surface divide-y divide-gray-200">
+                                    <!-- @MAP: shipmentRequests.map(request => ( -->
+                                    <tr class="cursor-pointer hover:bg-gray-50 transition-colors" data-event="click:openRequestDetails" data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm font-medium text-primary" data-bind="request.number">AST-2025-001</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-status-new bg-opacity-10 text-status-new" data-bind="request.status">Новая</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-primary" data-bind="request.category">Астана</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-primary" data-bind="request.cargoName">Строительные материалы</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-text-primary">
+                                                <div data-bind="request.loadingAddress">ул. Промышленная, 15</div>
+                                                <div class="text-text-secondary" data-bind="request.unloadingAddress">→ пр. Республики, 45</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-secondary" data-bind="request.createdAt">15.01.2025 14:30</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="cursor-pointer hover:bg-gray-50 transition-colors" data-event="click:openRequestDetails" data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm font-medium text-primary" data-bind="request.number">INT-2025-002</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-status-processing bg-opacity-10 text-status-processing" data-bind="request.status">В обработке</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-primary" data-bind="request.category">Междугородний</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-primary" data-bind="request.cargoName">Электроника</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-text-primary">
+                                                <div data-bind="request.loadingAddress">г. Алматы, ул. Тимирязева, 42</div>
+                                                <div class="text-text-secondary" data-bind="request.unloadingAddress">→ г. Астана, пр. Кабанбай батыра, 12</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-secondary" data-bind="request.createdAt">15.01.2025 16:45</span>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr class="cursor-pointer hover:bg-gray-50 transition-colors" data-event="click:openRequestDetails" data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm font-medium text-primary" data-bind="request.number">AST-2025-003</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-status-transit bg-opacity-10 text-status-transit" data-bind="request.status">В пути</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-primary" data-bind="request.category">Астана</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-primary" data-bind="request.cargoName">Продукты питания</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-text-primary">
+                                                <div data-bind="request.loadingAddress">ул. Сатпаева, 90</div>
+                                                <div class="text-text-secondary" data-bind="request.unloadingAddress">→ мкр. Самал-2, д. 78</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="text-sm text-text-secondary" data-bind="request.createdAt">14.01.2025 09:15</span>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="bg-surface px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                            <div class="text-sm text-text-secondary">
+                                Показано <span class="font-medium" data-bind="pagination.showing">1-10</span> из <span class="font-medium" data-bind="pagination.total">247</span> заявок
+                            </div>
+                            <div class="flex space-x-1">
+                                <button class="px-3 py-2 text-sm text-text-secondary hover:bg-gray-100 rounded border" disabled data-mock="true">Предыдущая</button>
+                                <button class="px-3 py-2 text-sm bg-primary text-white rounded" data-mock="true">1</button>
+                                <button class="px-3 py-2 text-sm text-text-secondary hover:bg-gray-100 rounded border" data-mock="true">2</button>
+                                <button class="px-3 py-2 text-sm text-text-secondary hover:bg-gray-100 rounded border" data-mock="true">3</button>
+                                <button class="px-3 py-2 text-sm text-text-secondary hover:bg-gray-100 rounded border" data-mock="true">Следующая</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Create Request Page -->
+                <div id="create-page" class="page-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-surface rounded-lg shadow-material p-8">
+                            <h3 class="text-xl font-medium text-text-primary mb-6">Создание новой заявки на отгрузку</h3>
+                            
+                            <form class="space-y-8" data-mock="true">
+                                <!-- Category Selection -->
+                                <div>
+                                    <label class="block text-sm font-medium text-text-primary mb-4">Категория отгрузки</label>
+                                    <div class="flex space-x-6">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="category" value="astana" class="mr-3 text-primary focus:ring-primary" data-mock="true" checked>
+                                            <span class="text-sm text-text-primary">Отгрузки по Астане</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" name="category" value="intercity" class="mr-3 text-primary focus:ring-primary" data-mock="true">
+                                            <span class="text-sm text-text-primary">Междугородние отгрузки</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cargo Information -->
+                                <div class="bg-gray-50 rounded-lg p-6">
+                                    <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                        <span class="material-icons mr-2">inventory_2</span>
+                                        Информация о грузе
+                                    </h4>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Наименование груза *</label>
+                                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="Введите наименование груза" data-mock="true" required>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Количество мест</label>
+                                            <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="Количество" data-mock="true">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Вес (кг)</label>
+                                            <input type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="0.00" data-mock="true">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Объем (м³)</label>
+                                            <input type="number" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="0.00" data-mock="true">
+                                        </div>
+                                        
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Габариты (ДхШхВ)</label>
+                                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="Например: 120x80x60 см" data-mock="true">
+                                        </div>
+                                        
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Особые требования</label>
+                                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                      rows="3" placeholder="Дополнительные требования к перевозке" data-mock="true"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Loading Address -->
+                                <div class="bg-gray-50 rounded-lg p-6">
+                                    <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                        <span class="material-icons mr-2">location_on</span>
+                                        Адрес погрузки
+                                    </h4>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Адрес *</label>
+                                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                      rows="2" placeholder="Полный адрес места погрузки" data-mock="true" required></textarea>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Контактное лицо</label>
+                                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="ФИО контактного лица" data-mock="true">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Телефон</label>
+                                            <input type="tel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="+7 (___) ___-__-__" data-mock="true">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Unloading Address -->
+                                <div class="bg-gray-50 rounded-lg p-6">
+                                    <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                        <span class="material-icons mr-2">place</span>
+                                        Адрес выгрузки
+                                    </h4>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Адрес *</label>
+                                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                      rows="2" placeholder="Полный адрес места выгрузки" data-mock="true" required></textarea>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Контактное лицо</label>
+                                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="ФИО контактного лица" data-mock="true">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Телефон</label>
+                                            <input type="tel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   placeholder="+7 (___) ___-__-__" data-mock="true">
+                                        </div>
+                                        
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Желаемая дата и время отгрузки</label>
+                                            <input type="datetime-local" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                   data-mock="true">
+                                        </div>
+                                        
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-text-primary mb-2">Примечания</label>
+                                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" 
+                                                      rows="3" placeholder="Дополнительная информация" data-mock="true"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Submit Buttons -->
+                                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                                    <button type="button" class="px-6 py-2 border border-gray-300 text-text-secondary rounded-lg hover:bg-gray-50 transition-colors" 
+                                            data-nav="dashboard">Отмена</button>
+                                    <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors" 
+                                            data-event="submit:createRequest">Создать заявку</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Request Details Page -->
+                <div id="details-page" class="page-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Header with actions -->
+                        <div class="bg-surface rounded-lg shadow-material p-6 mb-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-medium text-text-primary">Заявка AST-2025-001</h3>
+                                    <p class="text-text-secondary">Создана 15.01.2025 14:30</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="inline-flex px-3 py-1 text-sm font-medium rounded-full bg-status-new bg-opacity-10 text-status-new">Новая</span>
+                                    <button class="px-4 py-2 border border-gray-300 text-text-secondary rounded-lg hover:bg-gray-50 transition-colors">
+                                        <span class="material-icons text-sm mr-1">edit</span>
+                                        Редактировать
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Timeline -->
+                        <div class="bg-surface rounded-lg shadow-material p-6 mb-6">
+                            <h4 class="text-lg font-medium text-text-primary mb-4">Статус заявки</h4>
+                            <div class="relative">
+                                <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                                
+                                <div class="relative flex items-center mb-4">
+                                    <div class="w-8 h-8 bg-status-new rounded-full flex items-center justify-center mr-4">
+                                        <span class="material-icons text-white text-sm">fiber_new</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-text-primary">Новая заявка</p>
+                                        <p class="text-xs text-text-secondary">15.01.2025 14:30</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative flex items-center mb-4 opacity-50">
+                                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-4">
+                                        <span class="material-icons text-white text-sm">hourglass_empty</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-text-primary">В обработке</p>
+                                        <p class="text-xs text-text-secondary">Ожидается</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative flex items-center mb-4 opacity-50">
+                                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-4">
+                                        <span class="material-icons text-white text-sm">assignment_ind</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-text-primary">Назначен транспорт</p>
+                                        <p class="text-xs text-text-secondary">Ожидается</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Cargo Information -->
+                            <div class="bg-surface rounded-lg shadow-material p-6">
+                                <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                    <span class="material-icons mr-2">inventory_2</span>
+                                    Информация о грузе
+                                </h4>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Наименование</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.cargoName">Строительные материалы</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Количество мест</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.packageCount">15 шт</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Вес</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.weight">2,500 кг</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Объем</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.volume">12.5 м³</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Габариты</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.dimensions">200x120x80 см</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Transport Information -->
+                            <div class="bg-surface rounded-lg shadow-material p-6">
+                                <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                    <span class="material-icons mr-2">local_shipping</span>
+                                    Информация о транспорте
+                                </h4>
+                                
+                                <div class="text-center py-8">
+                                    <span class="material-icons text-gray-400 text-5xl mb-2">pending</span>
+                                    <p class="text-text-secondary">Транспорт не назначен</p>
+                                    <button class="mt-4 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-dark transition-colors">
+                                        Назначить транспорт
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Loading Address -->
+                            <div class="bg-surface rounded-lg shadow-material p-6">
+                                <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                    <span class="material-icons mr-2">location_on</span>
+                                    Адрес погрузки
+                                </h4>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Адрес</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.loadingAddress">г. Астана, ул. Промышленная, 15, склад №3</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Контактное лицо</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.loadingContact">Сергей Иванов</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Телефон</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.loadingPhone">+7 (701) 123-45-67</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Unloading Address -->
+                            <div class="bg-surface rounded-lg shadow-material p-6">
+                                <h4 class="text-lg font-medium text-text-primary mb-4 flex items-center">
+                                    <span class="material-icons mr-2">place</span>
+                                    Адрес выгрузки
+                                </h4>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Адрес</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.unloadingAddress">г. Астана, пр. Республики, 45, стройплощадка</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Контактное лицо</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.unloadingContact">Мария Петрова</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Телефон</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.unloadingPhone">+7 (702) 234-56-78</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-text-secondary">Желаемое время</p>
+                                        <p class="text-sm font-medium text-text-primary" data-bind="request.desiredTime">16.01.2025 10:00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports Page -->
+                <div id="reports-page" class="page-content hidden">
+                    <!-- Period Filter -->
+                    <div class="bg-surface rounded-lg shadow-material p-6 mb-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <h3 class="text-xl font-medium text-text-primary">Отчеты и аналитика</h3>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" data-mock="true">
+                                    <option value="week">За неделю</option>
+                                    <option value="month" selected>За месяц</option>
+                                    <option value="quarter">За квартал</option>
+                                    <option value="custom">Произвольный период</option>
+                                </select>
+                                <button class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-dark transition-colors flex items-center space-x-2">
+                                    <span class="material-icons">file_download</span>
+                                    <span>Экспорт в Excel</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics Widgets -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-surface rounded-lg shadow-material p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-lg font-medium text-text-primary">Статистика за месяц</h4>
+                                <span class="material-icons text-primary">trending_up</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Всего заявок:</span>
+                                    <span class="font-medium text-text-primary">89</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Выполнено:</span>
+                                    <span class="font-medium text-status-delivered">67</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Отменено:</span>
+                                    <span class="font-medium text-status-cancelled">4</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-text-secondary">Успешность:</span>
+                                    <span class="font-medium text-status-delivered">94.4%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface rounded-lg shadow-material p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-lg font-medium text-text-primary">По категориям</h4>
+                                <span class="material-icons text-secondary">pie_chart</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                                        <span class="text-text-secondary">Астана</span>
+                                    </div>
+                                    <span class="font-medium text-text-primary">56 (63%)</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-secondary rounded-full mr-2"></div>
+                                        <span class="text-text-secondary">Междугородний</span>
+                                    </div>
+                                    <span class="font-medium text-text-primary">33 (37%)</span>
+                                </div>
+                                
+                                <!-- Simple progress bars -->
+                                <div class="pt-2">
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                        <div class="bg-primary h-2 rounded-full" style="width: 63%"></div>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-secondary h-2 rounded-full" style="width: 37%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-surface rounded-lg shadow-material p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-lg font-medium text-text-primary">По статусам</h4>
+                                <span class="material-icons text-status-processing">bar_chart</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-text-secondary">Новые</span>
+                                    <span class="px-2 py-1 text-xs bg-status-new bg-opacity-10 text-status-new rounded">12</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-text-secondary">В обработке</span>
+                                    <span class="px-2 py-1 text-xs bg-status-processing bg-opacity-10 text-status-processing rounded">8</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-text-secondary">В пути</span>
+                                    <span class="px-2 py-1 text-xs bg-status-transit bg-opacity-10 text-status-transit rounded">18</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-text-secondary">Доставлено</span>
+                                    <span class="px-2 py-1 text-xs bg-status-delivered bg-opacity-10 text-status-delivered rounded">67</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Table for Export -->
+                    <div class="bg-surface rounded-lg shadow-material overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h4 class="text-lg font-medium text-text-primary">Детальные данные за период</h4>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">№ Заявки</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Категория</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Статус</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Дата создания</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Дата выполнения</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Автор</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-surface divide-y divide-gray-200">
+                                    <!-- @MAP: reportData.map(item => ( -->
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">AST-2025-001</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary">Астана</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-status-delivered bg-opacity-10 text-status-delivered">Доставлен</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">15.01.2025</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">16.01.2025</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">И. Петров</td>
+                                    </tr>
+                                    <tr data-mock="true">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">INT-2025-002</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-primary">Междугородний</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-status-transit bg-opacity-10 text-status-transit">В пути</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">15.01.2025</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">-</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">А. Сидоров</td>
+                                    </tr>
+                                    <!-- @END_MAP )) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- @END_COMPONENT: PageContent -->
+            
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <script>
+    // Simple navigation and UI interactions
+    (function() {
+        // Navigation handling
+        const navLinks = document.querySelectorAll('[data-nav]');
+        const pages = document.querySelectorAll('.page-content');
+        const pageTitle = document.getElementById('page-title');
+        
+        const pageInfo = {
+            'dashboard': 'Дашборд заявок',
+            'create': 'Создание заявки',
+            'reports': 'Отчеты и аналитика',
+            'details': 'Детали заявки'
+        };
+        
+        function showPage(pageId) {
+            // Hide all pages
+            pages.forEach(page => page.classList.add('hidden'));
+            
+            // Show selected page
+            const targetPage = document.getElementById(`${pageId}-page`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                pageTitle.textContent = pageInfo[pageId] || 'Система заявок';
+            }
+            
+            // Update nav active states
+            navLinks.forEach(link => {
+                if (link.dataset.nav === pageId) {
+                    link.classList.add('bg-primary', 'text-white', 'shadow-sm');
+                    link.classList.remove('text-text-secondary', 'hover:bg-gray-100');
+                } else {
+                    link.classList.remove('bg-primary', 'text-white', 'shadow-sm');
+                    link.classList.add('text-text-secondary', 'hover:bg-gray-100');
+                }
+            });
+        }
+        
+        // Add click handlers to navigation
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage(link.dataset.nav);
+            });
+        });
+        
+        // Mobile sidebar toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        }
+        
+        mobileMenuBtn?.addEventListener('click', toggleSidebar);
+        sidebarOverlay?.addEventListener('click', toggleSidebar);
+        
+        // Table row clicks for request details
+        document.addEventListener('click', (e) => {
+            const row = e.target.closest('tr[data-event="click:openRequestDetails"]');
+            if (row) {
+                showPage('details');
+            }
+        });
+        
+        // Form submission placeholder
+        document.addEventListener('submit', (e) => {
+            if (e.target.dataset.mock === 'true') {
+                e.preventDefault();
+                alert('Форма отправлена! (это демо-версия)');
+                // TODO: Implement actual form submission logic
+            }
+        });
+        
+        // Initialize with dashboard page
+        showPage('dashboard');
+    })();
+    </script>
+
+</body>
+</html>
