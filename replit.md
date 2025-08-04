@@ -7,6 +7,15 @@ This is a logistics management system called "Хром логистика" (Chro
 Preferred communication style: Simple, everyday language.
 Content style: Changed public-facing text to corporate internal use - removed client-oriented marketing language and replaced with internal system terminology.
 
+# Migration Status
+✓ Successfully migrated from Replit Agent to standard environment (Aug 4, 2025)
+✓ All packages installed and configured
+✓ PostgreSQL database connected and migrations applied
+✓ Public order submission forms working without authentication
+✓ Fixed data validation issues between frontend and backend
+✓ All API endpoints tested and functional
+✓ Admin requests management page implemented with pricing functionality (Aug 4, 2025)
+
 # System Architecture
 
 ## Frontend Architecture
@@ -43,6 +52,7 @@ Content style: Changed public-facing text to corporate internal use - removed cl
 - **Cargo Information**: Comprehensive cargo details including weight, volume, dimensions (removed confusing "package count" field)
 - **Contact Management**: Separate loading and unloading contact information
 - **Transport Assignment**: JSON field for storing transport and driver details
+- **Pricing System**: Added priceKzt (decimal) and priceNotes (text) fields for logistics managers to set shipment costs
 
 # External Dependencies
 

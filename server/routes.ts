@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertShipmentRequestSchema, updateShipmentRequestSchema, insertUserSchema } from "@shared/schema";
+import { insertShipmentRequestSchema, publicInsertShipmentRequestSchema, updateShipmentRequestSchema, insertUserSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
@@ -145,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cargoWeightKg: request.cargoWeightKg,
         cargoVolumeM3: request.cargoVolumeM3,
         cargoDimensions: request.cargoDimensions,
-        packageCount: request.packageCount,
+
         loadingAddress: request.loadingAddress,
         unloadingAddress: request.unloadingAddress,
         transportInfo: request.transportInfo,
@@ -163,10 +163,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public POST endpoint for creating shipment requests (no authentication required)
   app.post("/api/shipment-requests/public", async (req, res) => {
     try {
-      const requestData = insertShipmentRequestSchema.parse({
-        ...req.body,
+      // Use the public schema for validation
+      const publicData = publicInsertShipmentRequestSchema.parse(req.body);
+      
+      // Transform the data for storage
+      const requestData = {
+        category: publicData.category,
+        cargoName: publicData.cargoName,
+        cargoWeightKg: publicData.cargoWeightKg && String(publicData.cargoWeightKg).trim() !== "" ? String(publicData.cargoWeightKg) : null,
+        cargoVolumeM3: publicData.cargoVolumeM3 && String(publicData.cargoVolumeM3).trim() !== "" ? String(publicData.cargoVolumeM3) : null,
+        cargoDimensions: publicData.cargoDimensions || null,
+        specialRequirements: publicData.specialRequirements || null,
+        loadingCity: publicData.loadingCity || null,
+        loadingAddress: publicData.loadingAddress,
+        loadingContactPerson: publicData.loadingContactPerson || null,
+        loadingContactPhone: publicData.loadingContactPhone || null,
+        unloadingCity: publicData.unloadingCity || null,
+        unloadingAddress: publicData.unloadingAddress,
+        unloadingContactPerson: publicData.unloadingContactPerson || null,
+        unloadingContactPhone: publicData.unloadingContactPhone || null,
+        desiredShipmentDatetime: publicData.desiredShipmentDatetime && publicData.desiredShipmentDatetime.trim() !== "" 
+          ? new Date(publicData.desiredShipmentDatetime) 
+          : null,
+        notes: publicData.notes || null,
         createdByUserId: 1 // Default system user for public requests
-      });
+      };
       
       const request = await storage.createShipmentRequest(requestData);
       res.status(201).json({
@@ -176,7 +197,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create public request error:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Ошибка валидации", errors: error.errors });
+        return res.status(400).json({ 
+          message: "Ошибка валидации", 
+          errors: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
       }
       res.status(500).json({ message: "Внутренняя ошибка сервера" });
     }

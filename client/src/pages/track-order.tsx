@@ -212,9 +212,7 @@ export default function TrackOrder() {
                       {shipmentRequest.cargoWeightKg && (
                         <p><span className="text-gray-500">Вес:</span> {shipmentRequest.cargoWeightKg} кг</p>
                       )}
-                      {shipmentRequest.packageCount && (
-                        <p><span className="text-gray-500">Количество мест:</span> {shipmentRequest.packageCount}</p>
-                      )}
+
                       {shipmentRequest.cargoDimensions && (
                         <p><span className="text-gray-500">Габариты:</span> {shipmentRequest.cargoDimensions}</p>
                       )}

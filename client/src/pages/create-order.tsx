@@ -34,7 +34,7 @@ export default function CreateOrder() {
     cargoWeightKg: "",
     cargoVolumeM3: "",
     cargoDimensions: "",
-    packageCount: "",
+
     specialRequirements: "",
     loadingCity: "",
     loadingAddress: "",
@@ -59,16 +59,15 @@ export default function CreateOrder() {
         ...data,
         cargoWeightKg: data.cargoWeightKg ? parseFloat(data.cargoWeightKg) : null,
         cargoVolumeM3: data.cargoVolumeM3 ? parseFloat(data.cargoVolumeM3) : null,
-        packageCount: data.packageCount ? parseInt(data.packageCount) : null,
+
         desiredShipmentDatetime: data.desiredShipmentDatetime ? new Date(data.desiredShipmentDatetime).toISOString() : null,
         createdByUserId: 1 // Default system user for public requests
       };
       
-      const response = await fetch("/api/shipment-requests", {
+      const response = await fetch("/api/shipment-requests/public", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer public-request"
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(processedData)
       });
@@ -220,16 +219,7 @@ export default function CreateOrder() {
                     placeholder="Например: Документы, оборудование, товары"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="packageCount">Количество мест</Label>
-                  <Input
-                    id="packageCount"
-                    type="number"
-                    value={formData.packageCount}
-                    onChange={(e) => handleChange('packageCount', e.target.value)}
-                    placeholder="1"
-                  />
-                </div>
+
               </div>
               
               <div className="grid md:grid-cols-3 gap-4">

@@ -11,6 +11,7 @@ import Home from "@/pages/home";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import CreateRequest from "@/pages/create-request";
+import RequestsManagement from "@/pages/requests-management";
 import CreateOrder from "@/pages/create-order";
 import TrackOrder from "@/pages/track-order";
 import RequestDetails from "@/pages/request-details";
@@ -55,6 +56,10 @@ function Router() {
         ) : (
           <Dashboard />
         )}
+      </Route>
+      
+      <Route path="/requests">
+        {isAuthenticated ? <RequestsManagement /> : <Redirect to="/login" />}
       </Route>
       
       <Route path="/create-request">

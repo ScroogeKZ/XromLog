@@ -9,7 +9,8 @@ import {
   Bell, 
   Settings, 
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  List
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
@@ -53,6 +54,12 @@ export function Layout({ children }: LayoutProps) {
       current: location === "/dashboard" || location === "/"
     },
     {
+      name: "Все заявки",
+      href: "/requests",
+      icon: List,
+      current: location === "/requests"
+    },
+    {
       name: "Создать заявку",
       href: "/create-request",
       icon: Plus,
@@ -77,6 +84,8 @@ export function Layout({ children }: LayoutProps) {
       case "/dashboard":
       case "/":
         return "Панель управления";
+      case "/requests":
+        return "Управление заявками";
       case "/create-request":
         return "Новая заявка";
       case "/transport":

@@ -37,6 +37,8 @@ export const shipmentRequests = pgTable("shipment_requests", {
   desiredShipmentDatetime: timestamp("desired_shipment_datetime", { withTimezone: true }),
   notes: text("notes"),
   transportInfo: jsonb("transport_info"), // { "driver_name": "...", "driver_phone": "...", "vehicle_model": "...", "vehicle_plate": "..." }
+  priceKzt: decimal("price_kzt", { precision: 10, scale: 2 }), // Price in KZT
+  priceNotes: text("price_notes"), // Additional pricing notes
 });
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -63,15 +65,55 @@ export const insertShipmentRequestSchema = createInsertSchema(shipmentRequests).
   updatedAt: true,
 });
 
-export const updateShipmentRequestSchema = createInsertSchema(shipmentRequests).omit({
-  id: true,
-  requestNumber: true,
-  createdAt: true,
-  createdByUserId: true,
-}).partial();
+// Public schema for frontend forms - accepts both strings and numbers for decimal fields
+export const publicInsertShipmentRequestSchema = z.object({
+  category: z.string(),
+  cargoName: z.string().min(1, "Наименование груза обязательно"),
+  cargoWeightKg: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoVolumeM3: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoDimensions: z.string().optional().nullable(),
+  specialRequirements: z.string().optional().nullable(),
+  loadingCity: z.string().optional().nullable(),
+  loadingAddress: z.string().min(1, "Адрес загрузки обязателен"),
+  loadingContactPerson: z.string().optional().nullable(),
+  loadingContactPhone: z.string().optional().nullable(),
+  unloadingCity: z.string().optional().nullable(),
+  unloadingAddress: z.string().min(1, "Адрес выгрузки обязателен"),
+  unloadingContactPerson: z.string().optional().nullable(),
+  unloadingContactPhone: z.string().optional().nullable(),
+  desiredShipmentDatetime: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  // Client contact fields for public requests
+  clientName: z.string().optional().nullable(),
+  clientPhone: z.string().optional().nullable(),
+  clientEmail: z.string().optional().nullable(),
+});
+
+export const updateShipmentRequestSchema = z.object({
+  status: z.string().optional(),
+  cargoName: z.string().optional(),
+  cargoWeightKg: z.string().optional().nullable(),
+  cargoVolumeM3: z.string().optional().nullable(),
+  cargoDimensions: z.string().optional().nullable(),
+  specialRequirements: z.string().optional().nullable(),
+  loadingCity: z.string().optional().nullable(),
+  loadingAddress: z.string().optional(),
+  loadingContactPerson: z.string().optional().nullable(),
+  loadingContactPhone: z.string().optional().nullable(),
+  unloadingCity: z.string().optional().nullable(),
+  unloadingAddress: z.string().optional(),
+  unloadingContactPerson: z.string().optional().nullable(),
+  unloadingContactPhone: z.string().optional().nullable(),
+  desiredShipmentDatetime: z.date().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  transportInfo: z.any().optional().nullable(),
+  priceKzt: z.number().optional().nullable(),
+  priceNotes: z.string().optional().nullable(),
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertShipmentRequest = z.infer<typeof insertShipmentRequestSchema>;
+export type PublicInsertShipmentRequest = z.infer<typeof publicInsertShipmentRequestSchema>;
 export type UpdateShipmentRequest = z.infer<typeof updateShipmentRequestSchema>;
 export type ShipmentRequest = typeof shipmentRequests.$inferSelect;
