@@ -25,6 +25,7 @@ export interface IStorage {
     limit?: number;
   }): Promise<{ requests: ShipmentRequest[]; total: number }>;
   getShipmentRequestById(id: number): Promise<ShipmentRequest | undefined>;
+  getShipmentRequestByNumber(requestNumber: string): Promise<ShipmentRequest | undefined>;
   createShipmentRequest(request: InsertShipmentRequest): Promise<ShipmentRequest>;
   updateShipmentRequest(id: number, request: UpdateShipmentRequest): Promise<ShipmentRequest | undefined>;
   deleteShipmentRequest(id: number): Promise<boolean>;
@@ -114,6 +115,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(shipmentRequests)
       .where(eq(shipmentRequests.id, id));
+    return request || undefined;
+  }
+
+  async getShipmentRequestByNumber(requestNumber: string): Promise<ShipmentRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(shipmentRequests)
+      .where(eq(shipmentRequests.requestNumber, requestNumber));
     return request || undefined;
   }
 

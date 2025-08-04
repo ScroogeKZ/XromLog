@@ -7,9 +7,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth } from "./lib/auth";
 
 // Pages
+import Home from "@/pages/home";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import CreateRequest from "@/pages/create-request";
+import CreateOrder from "@/pages/create-order";
+import TrackOrder from "@/pages/track-order";
 import RequestDetails from "@/pages/request-details";
 import Reports from "@/pages/reports";
 import PublicRequest from "@/pages/public-request";
@@ -30,12 +33,15 @@ function Router() {
   return (
     <Switch>
       {/* Public routes */}
+      <Route path="/" component={Home} />
+      <Route path="/create-order/:type" component={CreateOrder} />
+      <Route path="/track/:id?" component={TrackOrder} />
       <Route path="/public" component={PublicRequest} />
       
       {/* Admin routes - require authentication */}
       <Route path="/login" component={Login} />
       
-      <Route path="/">
+      <Route path="/admin">
         {isAuthenticated === null ? (
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
@@ -50,19 +56,19 @@ function Router() {
         )}
       </Route>
       
-      <Route path="/dashboard">
+      <Route path="/admin/dashboard">
         {isAuthenticated ? <Dashboard /> : <Redirect to="/login" />}
       </Route>
       
-      <Route path="/create-request">
+      <Route path="/admin/create-request">
         {isAuthenticated ? <CreateRequest /> : <Redirect to="/login" />}
       </Route>
       
-      <Route path="/request/:id">
+      <Route path="/admin/request/:id">
         {isAuthenticated ? <RequestDetails /> : <Redirect to="/login" />}
       </Route>
       
-      <Route path="/reports">
+      <Route path="/admin/reports">
         {isAuthenticated ? <Reports /> : <Redirect to="/login" />}
       </Route>
       

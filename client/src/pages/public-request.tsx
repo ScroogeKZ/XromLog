@@ -16,7 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { kazakhstanCities } from "../../../shared/cities";
 
 export default function PublicRequest() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -28,9 +30,11 @@ export default function PublicRequest() {
     cargoDimensions: "",
     packageCount: "",
     specialRequirements: "",
+    loadingCity: "",
     loadingAddress: "",
     loadingContactPerson: "",
     loadingContactPhone: "",
+    unloadingCity: "",
     unloadingAddress: "",
     unloadingContactPerson: "",
     unloadingContactPhone: "",
@@ -347,6 +351,26 @@ export default function PublicRequest() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {formData.category === "intercity" && (
+                      <div>
+                        <Label htmlFor="loadingCity">Город отправления *</Label>
+                        <Select
+                          value={formData.loadingCity}
+                          onValueChange={(value) => handleChange('loadingCity', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите город отправления" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kazakhstanCities.map((city) => (
+                              <SelectItem key={city} value={city}>
+                                {city}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     <div>
                       <Label htmlFor="loadingAddress">Адрес *</Label>
                       <Textarea
@@ -355,7 +379,7 @@ export default function PublicRequest() {
                         rows={2}
                         value={formData.loadingAddress}
                         onChange={(e) => handleChange('loadingAddress', e.target.value)}
-                        placeholder="Полный адрес загрузки"
+                        placeholder={formData.category === "astana" ? "Полный адрес в Астане" : "Точный адрес в городе"}
                       />
                     </div>
                     <div>
@@ -389,6 +413,26 @@ export default function PublicRequest() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {formData.category === "intercity" && (
+                      <div>
+                        <Label htmlFor="unloadingCity">Город назначения *</Label>
+                        <Select
+                          value={formData.unloadingCity}
+                          onValueChange={(value) => handleChange('unloadingCity', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите город назначения" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {kazakhstanCities.map((city) => (
+                              <SelectItem key={city} value={city}>
+                                {city}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     <div>
                       <Label htmlFor="unloadingAddress">Адрес *</Label>
                       <Textarea
@@ -397,7 +441,7 @@ export default function PublicRequest() {
                         rows={2}
                         value={formData.unloadingAddress}
                         onChange={(e) => handleChange('unloadingAddress', e.target.value)}
-                        placeholder="Полный адрес доставки"
+                        placeholder={formData.category === "astana" ? "Полный адрес в Астане" : "Точный адрес в городе"}
                       />
                     </div>
                     <div>

@@ -26,9 +26,11 @@ export const shipmentRequests = pgTable("shipment_requests", {
   cargoDimensions: varchar("cargo_dimensions", { length: 255 }),
   packageCount: integer("package_count"),
   specialRequirements: text("special_requirements"),
+  loadingCity: varchar("loading_city", { length: 255 }), // For intercity shipments
   loadingAddress: text("loading_address").notNull(),
   loadingContactPerson: varchar("loading_contact_person", { length: 255 }),
   loadingContactPhone: varchar("loading_contact_phone", { length: 20 }),
+  unloadingCity: varchar("unloading_city", { length: 255 }), // For intercity shipments
   unloadingAddress: text("unloading_address").notNull(),
   unloadingContactPerson: varchar("unloading_contact_person", { length: 255 }),
   unloadingContactPhone: varchar("unloading_contact_phone", { length: 20 }),

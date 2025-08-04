@@ -125,6 +125,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to track shipment by request number
+  app.get("/api/shipment-requests/public/:requestNumber", async (req, res) => {
+    try {
+      const requestNumber = req.params.requestNumber;
+      const request = await storage.getShipmentRequestByNumber(requestNumber);
+      
+      if (!request) {
+        return res.status(404).json({ message: "Request not found" });
+      }
+      
+      // Return only essential information for public tracking
+      const publicRequest = {
+        id: request.id,
+        requestNumber: request.requestNumber,
+        category: request.category,
+        status: request.status,
+        cargoName: request.cargoName,
+        cargoWeightKg: request.cargoWeightKg,
+        cargoVolumeM3: request.cargoVolumeM3,
+        cargoDimensions: request.cargoDimensions,
+        packageCount: request.packageCount,
+        loadingAddress: request.loadingAddress,
+        unloadingAddress: request.unloadingAddress,
+        transportInfo: request.transportInfo,
+        createdAt: request.createdAt,
+        desiredShipmentDatetime: request.desiredShipmentDatetime
+      };
+      
+      res.json(publicRequest);
+    } catch (error) {
+      console.error("Get public request error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Public POST endpoint for creating shipment requests (no authentication required)
+  app.post("/api/shipment-requests/public", async (req, res) => {
+    try {
+      const requestData = insertShipmentRequestSchema.parse({
+        ...req.body,
+        createdByUserId: 1 // Default system user for public requests
+      });
+      
+      const request = await storage.createShipmentRequest(requestData);
+      res.status(201).json({
+        requestNumber: request.requestNumber,
+        message: "Заявка успешно создана"
+      });
+    } catch (error) {
+      console.error("Create public request error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Ошибка валидации", errors: error.errors });
+      }
+      res.status(500).json({ message: "Внутренняя ошибка сервера" });
+    }
+  });
+
   app.get("/api/shipment-requests/:id", authenticateToken, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
