@@ -28,7 +28,7 @@ export default function PublicRequest() {
     cargoWeightKg: "",
     cargoVolumeM3: "",
     cargoDimensions: "",
-    packageCount: "",
+
     specialRequirements: "",
     loadingCity: "",
     loadingAddress: "",
@@ -53,16 +53,15 @@ export default function PublicRequest() {
         ...data,
         cargoWeightKg: data.cargoWeightKg ? parseFloat(data.cargoWeightKg) : null,
         cargoVolumeM3: data.cargoVolumeM3 ? parseFloat(data.cargoVolumeM3) : null,
-        packageCount: data.packageCount ? parseInt(data.packageCount) : null,
+
         desiredShipmentDatetime: data.desiredShipmentDatetime ? new Date(data.desiredShipmentDatetime).toISOString() : null,
         createdByUserId: 1 // Default system user for public requests
       };
       
-      const response = await fetch("/api/shipment-requests", {
+      const response = await fetch("/api/shipment-requests/public", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer public-request"
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(processedData)
       });
@@ -304,17 +303,7 @@ export default function PublicRequest() {
                         placeholder="Что перевозим?"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="packageCount">Количество мест</Label>
-                      <Input
-                        id="packageCount"
-                        type="number"
-                        min="0"
-                        value={formData.packageCount}
-                        onChange={(e) => handleChange('packageCount', e.target.value)}
-                        placeholder="Количество коробок/паллет"
-                      />
-                    </div>
+
                     <div>
                       <Label htmlFor="cargoWeightKg">Вес (кг)</Label>
                       <Input
@@ -328,14 +317,26 @@ export default function PublicRequest() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="cargoDimensions">Габариты (ДхШхВ)</Label>
+                      <Label htmlFor="cargoVolumeM3">Объем (м³)</Label>
                       <Input
-                        id="cargoDimensions"
-                        value={formData.cargoDimensions}
-                        onChange={(e) => handleChange('cargoDimensions', e.target.value)}
-                        placeholder="Например: 120x80x60 см"
+                        id="cargoVolumeM3"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.cargoVolumeM3}
+                        onChange={(e) => handleChange('cargoVolumeM3', e.target.value)}
+                        placeholder="Примерный объем"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="cargoDimensions">Габариты (ДхШхВ)</Label>
+                    <Input
+                      id="cargoDimensions"
+                      value={formData.cargoDimensions}
+                      onChange={(e) => handleChange('cargoDimensions', e.target.value)}
+                      placeholder="Например: 120x80x60 см"
+                    />
                   </div>
                 </CardContent>
               </Card>

@@ -24,7 +24,7 @@ export const shipmentRequests = pgTable("shipment_requests", {
   cargoWeightKg: decimal("cargo_weight_kg", { precision: 10, scale: 2 }),
   cargoVolumeM3: decimal("cargo_volume_m3", { precision: 10, scale: 2 }),
   cargoDimensions: varchar("cargo_dimensions", { length: 255 }),
-  packageCount: integer("package_count"),
+
   specialRequirements: text("special_requirements"),
   loadingCity: varchar("loading_city", { length: 255 }), // For intercity shipments
   loadingAddress: text("loading_address").notNull(),

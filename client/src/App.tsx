@@ -15,6 +15,7 @@ import CreateOrder from "@/pages/create-order";
 import TrackOrder from "@/pages/track-order";
 import RequestDetails from "@/pages/request-details";
 import Reports from "@/pages/reports";
+import TransportManagement from "@/pages/transport-management";
 import PublicRequest from "@/pages/public-request";
 import NotFound from "@/pages/not-found";
 
@@ -41,7 +42,7 @@ function Router() {
       {/* Admin routes - require authentication */}
       <Route path="/login" component={Login} />
       
-      <Route path="/admin">
+      <Route path="/dashboard">
         {isAuthenticated === null ? (
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
@@ -56,19 +57,19 @@ function Router() {
         )}
       </Route>
       
-      <Route path="/admin/dashboard">
-        {isAuthenticated ? <Dashboard /> : <Redirect to="/login" />}
-      </Route>
-      
-      <Route path="/admin/create-request">
+      <Route path="/create-request">
         {isAuthenticated ? <CreateRequest /> : <Redirect to="/login" />}
       </Route>
       
-      <Route path="/admin/request/:id">
+      <Route path="/request/:id">
         {isAuthenticated ? <RequestDetails /> : <Redirect to="/login" />}
       </Route>
       
-      <Route path="/admin/reports">
+      <Route path="/transport">
+        {isAuthenticated ? <TransportManagement /> : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/reports">
         {isAuthenticated ? <Reports /> : <Redirect to="/login" />}
       </Route>
       

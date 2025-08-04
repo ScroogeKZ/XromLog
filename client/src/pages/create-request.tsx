@@ -22,7 +22,7 @@ export default function CreateRequest() {
     cargoWeightKg: "",
     cargoVolumeM3: "",
     cargoDimensions: "",
-    packageCount: "",
+
     specialRequirements: "",
     loadingCity: "",
     loadingAddress: "",
@@ -45,7 +45,7 @@ export default function CreateRequest() {
         ...data,
         cargoWeightKg: data.cargoWeightKg ? parseFloat(data.cargoWeightKg) : null,
         cargoVolumeM3: data.cargoVolumeM3 ? parseFloat(data.cargoVolumeM3) : null,
-        packageCount: data.packageCount ? parseInt(data.packageCount) : null,
+
         desiredShipmentDatetime: data.desiredShipmentDatetime ? new Date(data.desiredShipmentDatetime).toISOString() : null
       };
       
@@ -87,7 +87,7 @@ export default function CreateRequest() {
       <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Создание новой заявки на отгрузку</CardTitle>
+            <CardTitle className="text-xl">Создание заявки на логистические услуги</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -119,28 +119,17 @@ export default function CreateRequest() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="cargoName">Наименование груза *</Label>
+                    <Input
+                      id="cargoName"
+                      required
+                      value={formData.cargoName}
+                      onChange={(e) => handleChange('cargoName', e.target.value)}
+                      placeholder="Введите наименование груза"
+                    />
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="cargoName">Наименование груза *</Label>
-                      <Input
-                        id="cargoName"
-                        required
-                        value={formData.cargoName}
-                        onChange={(e) => handleChange('cargoName', e.target.value)}
-                        placeholder="Введите наименование груза"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="packageCount">Количество мест</Label>
-                      <Input
-                        id="packageCount"
-                        type="number"
-                        min="0"
-                        value={formData.packageCount}
-                        onChange={(e) => handleChange('packageCount', e.target.value)}
-                        placeholder="Количество"
-                      />
-                    </div>
                     <div>
                       <Label htmlFor="cargoWeightKg">Вес (кг)</Label>
                       <Input

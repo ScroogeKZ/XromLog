@@ -5,6 +5,7 @@ This is a logistics management system called "Хром логистика" (Chro
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Content style: Changed public-facing text to corporate internal use - removed client-oriented marketing language and replaced with internal system terminology.
 
 # System Architecture
 
@@ -39,7 +40,7 @@ Preferred communication style: Simple, everyday language.
 ## Data Model
 - **Request Tracking**: Auto-generated request numbers (AST-YYYY-NNN for Astana, INT-YYYY-NNN for intercity)
 - **Status Workflow**: Predefined status progression (new → processing → assigned → transit → delivered/cancelled)
-- **Cargo Information**: Comprehensive cargo details including weight, volume, dimensions, package count
+- **Cargo Information**: Comprehensive cargo details including weight, volume, dimensions (removed confusing "package count" field)
 - **Contact Management**: Separate loading and unloading contact information
 - **Transport Assignment**: JSON field for storing transport and driver details
 

@@ -198,43 +198,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public route for shipment requests (no authentication required)
-  app.post("/api/shipment-requests", async (req: any, res) => {
+  // Protected route for shipment requests (authentication required)
+  app.post("/api/shipment-requests", authenticateToken, async (req: any, res) => {
     try {
-      // Check if this is a public request by looking at authorization header
-      const authHeader = req.headers['authorization'];
-      const isPublicRequest = authHeader === 'Bearer public-request';
-      
-      let requestData;
-      
-      if (isPublicRequest) {
-        // For public requests, use default system user ID
-        requestData = insertShipmentRequestSchema.parse({
-          ...req.body,
-          createdByUserId: req.body.createdByUserId || 1 // Default system user
-        });
-      } else {
-        // For authenticated requests, verify token first
-        const token = authHeader && authHeader.split(' ')[1];
-        if (!token) {
-          return res.status(401).json({ message: 'Access token required' });
-        }
-
-        try {
-          const decoded = jwt.verify(token, JWT_SECRET) as any;
-          const user = await storage.getUser(decoded.userId);
-          if (!user) {
-            return res.status(401).json({ message: 'Invalid token' });
-          }
-          
-          requestData = insertShipmentRequestSchema.parse({
-            ...req.body,
-            createdByUserId: user.id
-          });
-        } catch (error) {
-          return res.status(403).json({ message: 'Invalid token' });
-        }
-      }
+      const requestData = insertShipmentRequestSchema.parse({
+        ...req.body,
+        createdByUserId: req.user.id
+      });
       
       const request = await storage.createShipmentRequest(requestData);
       res.status(201).json(request);

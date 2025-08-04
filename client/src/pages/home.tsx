@@ -38,17 +38,17 @@ export default function Home() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Хром Логистика</h1>
-                <p className="text-gray-600 dark:text-gray-300">Надежные грузоперевозки</p>
+                <p className="text-gray-600 dark:text-gray-300">Внутренняя система управления заявками</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                 <ShieldCheck className="w-4 h-4 mr-1" />
-                Работаем 24/7
+                Прием заявок 24/7
               </Badge>
               <Link href="/login">
                 <Button variant="outline" size="sm">
-                  Вход в админку
+                  Вход в систему
                 </Button>
               </Link>
             </div>
@@ -60,12 +60,12 @@ export default function Home() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-            Быстрые и надежные
-            <span className="block text-blue-600 dark:text-blue-400">грузоперевозки</span>
+            Система управления
+            <span className="block text-blue-600 dark:text-blue-400">заявками на отгрузку</span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
-            Профессиональные логистические услуги по Астане и межгородские перевозки. 
-            Создайте заявку за несколько минут или отследите существующий заказ.
+            Внутренняя корпоративная система для управления заявками на логистические услуги. 
+            Создавайте заявки, отслеживайте статусы и управляйте процессом доставки.
           </p>
         </div>
       </section>
@@ -87,18 +87,18 @@ export default function Home() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Быстрая доставка грузов в пределах города Астана. 
-                  Оперативно и по выгодным тарифам.
+                  Создание заявок на доставку грузов в пределах города Астана. 
+                  Управление местными логистическими задачами.
                 </p>
                 <ul className="text-sm text-gray-500 dark:text-gray-400 mb-8 space-y-2">
-                  <li>• Доставка в тот же день</li>
-                  <li>• Отслеживание в реальном времени</li>
-                  <li>• Фиксированные тарифы</li>
+                  <li>• Автоматическая нумерация заявок</li>
+                  <li>• Контроль статусов доставки</li>
+                  <li>• Управление контактами</li>
                 </ul>
                 <Link href="/create-order/astana">
                   <Button size="lg" className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold">
                     <Package className="w-5 h-5 mr-2" />
-                    Создать заказ по Астане
+                    Создать заявку по Астане
                   </Button>
                 </Link>
               </CardContent>
@@ -116,18 +116,18 @@ export default function Home() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Доставка грузов между городами Казахстана. 
-                  Надежно и в установленные сроки.
+                  Создание заявок на межгородские перевозки. 
+                  Управление дальними логистическими маршрутами.
                 </p>
                 <ul className="text-sm text-gray-500 dark:text-gray-400 mb-8 space-y-2">
-                  <li>• Доставка по всему Казахстану</li>
-                  <li>• Страхование грузов</li>
-                  <li>• Документооборот</li>
+                  <li>• Маршруты по всему Казахстану</li>
+                  <li>• Контроль сроков доставки</li>
+                  <li>• Управление документооборотом</li>
                 </ul>
                 <Link href="/create-order/intercity">
                   <Button size="lg" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold">
                     <Truck className="w-5 h-5 mr-2" />
-                    Создать межгородской заказ
+                    Создать межгородскую заявку
                   </Button>
                 </Link>
               </CardContent>
@@ -140,17 +140,17 @@ export default function Home() {
                   <Search className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Отслеживание заказа
+                  Отслеживание заявки
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Узнайте текущий статус вашего груза по номеру заказа. 
-                  Актуальная информация в режиме реального времени.
+                  Проверьте текущий статус заявки по номеру. 
+                  Актуальная информация о ходе выполнения.
                 </p>
                 <div className="mb-6">
                   <Label htmlFor="tracking-id" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Номер заказа
+                    Номер заявки
                   </Label>
                   <Input
                     id="tracking-id"
@@ -168,7 +168,7 @@ export default function Home() {
                   disabled={!trackingId.trim()}
                 >
                   <Search className="w-5 h-5 mr-2" />
-                  Отследить заказ
+                  Отследить заявку
                 </Button>
               </CardContent>
             </Card>
@@ -181,10 +181,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Почему выбирают нас
+              Возможности системы
             </h3>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Профессиональный подход к каждому заказу
+              Эффективное управление логистическими процессами компании
             </p>
           </div>
           
@@ -193,24 +193,24 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Быстрая доставка</h4>
-              <p className="text-gray-600 dark:text-gray-300">Соблюдаем сроки и доставляем точно в срок</p>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Контроль сроков</h4>
+              <p className="text-gray-600 dark:text-gray-300">Автоматическое отслеживание и уведомления о статусах</p>
             </div>
             
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <ShieldCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Надежность</h4>
-              <p className="text-gray-600 dark:text-gray-300">Страхование грузов и ответственность за сохранность</p>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Учет и отчетность</h4>
+              <p className="text-gray-600 dark:text-gray-300">Полная история заявок и детальная аналитика</p>
             </div>
             
             <div className="text-center">
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Phone className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Поддержка 24/7</h4>
-              <p className="text-gray-600 dark:text-gray-300">Всегда на связи для решения любых вопросов</p>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Доступ персонала</h4>
+              <p className="text-gray-600 dark:text-gray-300">Ролевая система доступа для сотрудников и менеджеров</p>
             </div>
           </div>
         </div>
@@ -220,10 +220,10 @@ export default function Home() {
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-            Остались вопросы?
+            Техническая поддержка
           </h3>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-            Свяжитесь с нами любым удобным способом
+            Обращайтесь к IT-отделу за помощью по работе с системой
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
             <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">

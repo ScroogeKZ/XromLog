@@ -41,7 +41,7 @@ export function Layout({ children }: LayoutProps) {
     setUser(null);
     toast({
       title: "Выход выполнен",
-      description: "Вы успешно вышли из системы"
+      description: "Вы успешно вышли из корпоративной системы"
     });
   };
 
@@ -59,6 +59,12 @@ export function Layout({ children }: LayoutProps) {
       current: location === "/create-request"
     },
     {
+      name: "Транспорт",
+      href: "/transport",
+      icon: Truck,
+      current: location === "/transport"
+    },
+    {
       name: "Отчеты",
       href: "/reports", 
       icon: BarChart3,
@@ -70,16 +76,18 @@ export function Layout({ children }: LayoutProps) {
     switch (location) {
       case "/dashboard":
       case "/":
-        return "Дашборд заявок";
+        return "Панель управления";
       case "/create-request":
-        return "Создание заявки";
+        return "Новая заявка";
+      case "/transport":
+        return "Управление транспортом";
       case "/reports":
         return "Отчеты и аналитика";
       default:
         if (location.startsWith("/request/")) {
           return "Детали заявки";
         }
-        return "Система заявок";
+        return "Корпоративная система";
     }
   };
 
@@ -98,7 +106,7 @@ export function Layout({ children }: LayoutProps) {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">Хром Логистика</h1>
-              <p className="text-xs text-muted-foreground">Система заявок</p>
+              <p className="text-xs text-muted-foreground">Корпоративная система</p>
             </div>
           </div>
         </div>
@@ -106,16 +114,14 @@ export function Layout({ children }: LayoutProps) {
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navigation.map((item) => (
-            <Link key={item.name} href={item.href}>
-              <a className={cn(
-                "flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover-lift",
-                item.current
-                  ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-              )}>
-                <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
-              </a>
+            <Link key={item.name} href={item.href} className={cn(
+              "flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover-lift",
+              item.current
+                ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+            )}>
+              <item.icon className="w-5 h-5" />
+              <span>{item.name}</span>
             </Link>
           ))}
         </nav>

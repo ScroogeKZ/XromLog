@@ -12,12 +12,34 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const token = localStorage.getItem("auth_token");
+  const headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
+
+  // Handle authentication errors
+  if (res.status === 401 || res.status === 403) {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("current_user");
+    // Force a page reload to trigger login redirect
+    if (window.location.pathname !== "/login") {
+      window.location.replace("/login");
+    }
+    throw new Error("Authentication failed. Please log in again.");
+  }
 
   await throwIfResNotOk(res);
   return res;
@@ -29,12 +51,31 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const token = localStorage.getItem("auth_token");
+    const headers: Record<string, string> = {};
+    
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(queryKey.join("/") as string, {
+      headers,
       credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("current_user");
       return null;
+    }
+
+    // Handle other auth errors
+    if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("current_user");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
 
     await throwIfResNotOk(res);

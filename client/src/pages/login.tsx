@@ -25,7 +25,7 @@ export default function Login() {
       await auth.login(formData.username, formData.password);
       toast({
         title: "Вход выполнен",
-        description: "Добро пожаловать в систему управления заявками"
+        description: "Добро пожаловать в корпоративную систему"
       });
       setLocation("/dashboard");
     } catch (error: any) {
@@ -57,7 +57,7 @@ export default function Login() {
             Хром Логистика
           </h2>
           <p className="mt-3 text-base text-muted-foreground">
-            Система управления заявками на отгрузку
+            Корпоративная система управления логистикой
           </p>
         </div>
 
@@ -65,7 +65,7 @@ export default function Login() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Вход в систему</CardTitle>
             <CardDescription className="text-base">
-              Введите ваши учетные данные для доступа к системе
+              Введите корпоративные учетные данные для доступа
             </CardDescription>
           </CardHeader>
           <CardContent>

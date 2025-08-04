@@ -271,12 +271,7 @@ export default function RequestDetails() {
                 <p className="text-sm text-gray-500">Наименование</p>
                 <p className="font-medium">{request.cargoName}</p>
               </div>
-              {request.packageCount && (
-                <div>
-                  <p className="text-sm text-gray-500">Количество мест</p>
-                  <p className="font-medium">{request.packageCount} шт</p>
-                </div>
-              )}
+
               {request.cargoWeightKg && (
                 <div>
                   <p className="text-sm text-gray-500">Вес</p>
