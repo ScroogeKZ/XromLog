@@ -209,6 +209,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Calendar endpoint for shipments with dates
+  app.get("/api/shipment-requests/calendar", authenticateToken, async (req, res) => {
+    try {
+      const { start, end } = req.query;
+      
+      if (!start || !end) {
+        return res.status(400).json({ message: "Start and end dates are required" });
+      }
+
+      const startDate = new Date(start as string);
+      const endDate = new Date(end as string);
+      
+      const shipments = await storage.getShipmentRequestsByDateRange(startDate, endDate);
+      
+      res.json(shipments);
+    } catch (error) {
+      console.error("Get calendar shipments error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.get("/api/shipment-requests/:id", authenticateToken, async (req, res) => {
     try {
       const id = parseInt(req.params.id);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Truck } from "lucide-react";
+import logoPath from "@assets/1571623_1754368340277.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,7 +53,7 @@ export default function Login() {
         <div className="text-center">
           <div className="mx-auto w-24 h-16 sm:w-32 sm:h-20 bg-white border border-gray-200 rounded-lg flex items-center justify-center card-shadow-lg p-2 sm:p-3">
             <img 
-              src="/attached_assets/1571623_1754335361197.png" 
+              src={logoPath} 
               alt="ХРОМ-KZ" 
               className="w-full h-full object-contain"
             />

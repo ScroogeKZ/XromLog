@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PhotoUpload } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
 import { kazakhstanCities } from "../../../shared/cities";
 
@@ -46,6 +47,7 @@ export default function CreateOrder() {
     unloadingContactPhone: "",
     desiredShipmentDatetime: "",
     notes: "",
+    cargoPhotos: [] as string[],
     clientName: "",
     clientPhone: "",
     clientEmail: ""
@@ -452,6 +454,15 @@ export default function CreateOrder() {
                   type="datetime-local"
                   value={formData.desiredShipmentDatetime}
                   onChange={(e) => handleChange('desiredShipmentDatetime', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="cargoPhotos">Фотографии груза</Label>
+                <PhotoUpload
+                  photos={formData.cargoPhotos}
+                  onPhotosChange={(photos) => setFormData({ ...formData, cargoPhotos: photos })}
+                  maxPhotos={5}
+                  disabled={submitRequestMutation.isPending}
                 />
               </div>
               <div>

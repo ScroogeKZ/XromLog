@@ -36,6 +36,7 @@ export const shipmentRequests = pgTable("shipment_requests", {
   unloadingContactPhone: varchar("unloading_contact_phone", { length: 20 }),
   desiredShipmentDatetime: timestamp("desired_shipment_datetime", { withTimezone: true }),
   notes: text("notes"),
+  cargoPhotos: text("cargo_photos").array(), // Array of image URLs/paths
   transportInfo: jsonb("transport_info"), // { "driver_name": "...", "driver_phone": "...", "vehicle_model": "...", "vehicle_plate": "..." }
   priceKzt: decimal("price_kzt", { precision: 10, scale: 2 }), // Price in KZT
   priceNotes: text("price_notes"), // Additional pricing notes
@@ -83,6 +84,7 @@ export const publicInsertShipmentRequestSchema = z.object({
   unloadingContactPhone: z.string().optional().nullable(),
   desiredShipmentDatetime: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  cargoPhotos: z.array(z.string()).optional().nullable(),
   // Client contact fields for public requests
   clientName: z.string().optional().nullable(),
   clientPhone: z.string().optional().nullable(),
@@ -106,6 +108,7 @@ export const updateShipmentRequestSchema = z.object({
   unloadingContactPhone: z.string().optional().nullable(),
   desiredShipmentDatetime: z.date().optional().nullable(),
   notes: z.string().optional().nullable(),
+  cargoPhotos: z.array(z.string()).optional().nullable(),
   transportInfo: z.any().optional().nullable(),
   priceKzt: z.string().optional().nullable(),
   priceNotes: z.string().optional().nullable(),

@@ -18,6 +18,7 @@ import RequestDetails from "@/pages/request-details";
 import Reports from "@/pages/reports";
 import TransportManagement from "@/pages/transport-management";
 import PublicRequest from "@/pages/public-request";
+import Calendar from "@/pages/calendar";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -64,6 +65,10 @@ function Router() {
       
       <Route path="/create-request">
         {isAuthenticated ? <CreateRequest /> : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/calendar">
+        {isAuthenticated ? <Calendar /> : <Redirect to="/login" />}
       </Route>
       
       <Route path="/request/:id">

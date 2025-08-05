@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Layout } from "@/components/layout";
+import { PhotoUpload } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { kazakhstanCities } from "../../../shared/cities";
@@ -33,7 +34,8 @@ export default function CreateRequest() {
     unloadingContactPerson: "",
     unloadingContactPhone: "",
     desiredShipmentDatetime: "",
-    notes: ""
+    notes: "",
+    cargoPhotos: [] as string[]
   });
   
   const queryClient = useQueryClient();
@@ -309,6 +311,15 @@ export default function CreateRequest() {
                       type="datetime-local"
                       value={formData.desiredShipmentDatetime}
                       onChange={(e) => handleChange('desiredShipmentDatetime', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cargoPhotos">Фотографии груза</Label>
+                    <PhotoUpload
+                      photos={formData.cargoPhotos}
+                      onPhotosChange={(photos) => setFormData({ ...formData, cargoPhotos: photos })}
+                      maxPhotos={5}
+                      disabled={createRequestMutation.isPending}
                     />
                   </div>
                   <div>

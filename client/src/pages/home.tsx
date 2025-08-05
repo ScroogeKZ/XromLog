@@ -11,6 +11,7 @@ import {
   Clock,
   ShieldCheck
 } from "lucide-react";
+import logoPath from "@assets/1571623_1754368340277.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ export default function Home() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="w-12 h-8 sm:w-16 sm:h-10 bg-white border border-gray-200 rounded flex items-center justify-center p-1">
                 <img 
-                  src="/attached_assets/1571623_1754335361197.png" 
+                  src={logoPath} 
                   alt="ХРОМ-KZ" 
                   className="w-full h-full object-contain"
                 />
@@ -48,7 +49,7 @@ export default function Home() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 text-xs sm:text-sm hidden sm:flex">
                 <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Работаем 24/7
+                Прием заявок 24/7
               </Badge>
               <Link href="/login">
                 <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm">
@@ -85,7 +86,7 @@ export default function Home() {
                 <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">24/7</h3>
-              <p className="text-muted-foreground text-xs sm:text-sm">Круглосуточная работа</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">Прием заявок</p>
             </div>
             <div className="professional-card p-4 sm:p-6 text-center hover-lift card-shadow">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -124,10 +125,9 @@ export default function Home() {
                   <li>• Управление контактами</li>
                 </ul>
                 <Link href="/create-order/astana">
-                  <Button size="sm" className="w-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm py-2">
-                    <Package className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Создать заявку по Астане</span>
-                    <span className="sm:hidden">Заявка Астана</span>
+                  <Button size="sm" className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-3">
+                    <Package className="w-3 h-3 mr-1" />
+                    <span className="whitespace-nowrap">Заявка Астана</span>
                   </Button>
                 </Link>
               </CardContent>
@@ -154,10 +154,9 @@ export default function Home() {
                   <li>• Управление документооборотом</li>
                 </ul>
                 <Link href="/create-order/intercity">
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm py-2">
-                    <Truck className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Создать межгородскую заявку</span>
-                    <span className="sm:hidden">Межгород</span>
+                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs py-2 px-3">
+                    <Truck className="w-3 h-3 mr-1" />
+                    <span className="whitespace-nowrap">Межгород</span>
                   </Button>
                 </Link>
               </CardContent>
@@ -193,13 +192,12 @@ export default function Home() {
                 </div>
                 <Button 
                   size="sm" 
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm py-2"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs py-2 px-3"
                   onClick={handleTrackOrder}
                   disabled={!trackingId.trim()}
                 >
-                  <Search className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Отследить заявку</span>
-                  <span className="sm:hidden">Отследить</span>
+                  <Search className="w-3 h-3 mr-1" />
+                  <span className="whitespace-nowrap">Отследить</span>
                 </Button>
               </CardContent>
             </Card>

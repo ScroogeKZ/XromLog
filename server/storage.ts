@@ -36,6 +36,7 @@ export interface IStorage {
     delivered: number;
   }>;
   getShipmentRequestsByDateRange(startDate: Date, endDate: Date): Promise<ShipmentRequest[]>;
+  getShipmentRequestsByDateRange(startDate: Date, endDate: Date): Promise<ShipmentRequest[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -205,11 +206,11 @@ export class DatabaseStorage implements IStorage {
       .from(shipmentRequests)
       .where(
         and(
-          gte(shipmentRequests.createdAt, startDate),
-          lte(shipmentRequests.createdAt, endDate)
+          gte(shipmentRequests.desiredShipmentDatetime, startDate),
+          lte(shipmentRequests.desiredShipmentDatetime, endDate)
         )
       )
-      .orderBy(desc(shipmentRequests.createdAt));
+      .orderBy(desc(shipmentRequests.desiredShipmentDatetime));
   }
 }
 

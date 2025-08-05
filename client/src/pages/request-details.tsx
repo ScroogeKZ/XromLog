@@ -296,6 +296,27 @@ export default function RequestDetails() {
                   <p className="font-medium">{request.specialRequirements}</p>
                 </div>
               )}
+              
+              {request.cargoPhotos && request.cargoPhotos.length > 0 && (
+                <div>
+                  <p className="text-sm text-gray-500">Фотографии груза</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                    {request.cargoPhotos.map((photo: string, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => window.open(photo, '_blank')}
+                        className="aspect-square rounded-lg overflow-hidden border border-border hover:opacity-75 transition-opacity"
+                      >
+                        <img
+                          src={photo}
+                          alt={`Фото груза ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -10,8 +10,10 @@ import {
   Settings, 
   LogOut,
   User as UserIcon,
-  List
+  List,
+  Calendar
 } from "lucide-react";
+import logoPath from "@assets/1571623_1754368340277.png";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import type { User } from "@/lib/auth";
@@ -66,6 +68,12 @@ export function Layout({ children }: LayoutProps) {
       current: location === "/create-request"
     },
     {
+      name: "Календарь отгрузок",
+      href: "/calendar",
+      icon: Calendar,
+      current: location === "/calendar"
+    },
+    {
       name: "Транспорт",
       href: "/transport",
       icon: Truck,
@@ -88,6 +96,8 @@ export function Layout({ children }: LayoutProps) {
         return "Управление заявками";
       case "/create-request":
         return "Новая заявка";
+      case "/calendar":
+        return "Календарь отгрузок";
       case "/transport":
         return "Управление транспортом";
       case "/reports":
@@ -104,17 +114,21 @@ export function Layout({ children }: LayoutProps) {
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-60 glass-card card-shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        "fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-border card-shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
         <div className="flex items-center justify-center h-16 px-6 border-b border-border">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg">
-              <Truck className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-lg p-1">
+              <img 
+                src={logoPath} 
+                alt="ХРОМ-KZ" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">Хром Логистика</h1>
+              <h1 className="text-lg font-bold text-foreground">ХРОМ-KZ</h1>
               <p className="text-xs text-muted-foreground">Корпоративная система</p>
             </div>
           </div>
@@ -136,16 +150,16 @@ export function Layout({ children }: LayoutProps) {
         </nav>
 
         {/* User Info */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-border">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
               <UserIcon className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 {user?.username || "Пользователь"}
               </p>
-              <p className="text-xs text-gray-500 truncate">
+              <p className="text-xs text-muted-foreground truncate">
                 {user?.role === "manager" ? "Менеджер" : "Сотрудник"}
               </p>
             </div>
@@ -153,7 +167,7 @@ export function Layout({ children }: LayoutProps) {
               variant="ghost"
               size="sm"
               onClick={handleLogout}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-muted-foreground hover:text-foreground"
             >
               <LogOut className="w-4 h-4" />
             </Button>

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Layout } from "@/components/layout";
 
 interface ShipmentRequest {
   id: number;
@@ -51,6 +52,7 @@ interface ShipmentRequest {
   transportInfo: any;
   priceKzt: string | null;
   priceNotes: string | null;
+  cargoPhotos: string[];
 }
 
 const statusLabels = {
@@ -127,6 +129,48 @@ export default function RequestsManagement() {
     }
   });
 
+  // Quick update functions
+  const handleQuickStatusUpdate = async (requestId: number, newStatus: string) => {
+    try {
+      await updateRequestMutation.mutateAsync({ id: requestId, data: { status: newStatus } });
+      toast({ 
+        title: "Статус обновлен", 
+        description: `Статус заявки изменен на "${statusLabels[newStatus as keyof typeof statusLabels]}"` 
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка обновления статуса",
+        description: error.message || "Не удалось обновить статус",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleQuickPriceUpdate = (requestId: number, newPrice: string) => {
+    // This is just for UI updates, actual save happens on blur
+  };
+
+  const handleSavePrice = async (requestId: number, newPrice: string) => {
+    if (!newPrice.trim()) return;
+    
+    try {
+      await updateRequestMutation.mutateAsync({ 
+        id: requestId, 
+        data: { priceKzt: parseFloat(newPrice) || 0 } 
+      });
+      toast({ 
+        title: "Цена обновлена", 
+        description: `Цена установлена: ${parseFloat(newPrice).toLocaleString()} ₸` 
+      });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка обновления цены",
+        description: error.message || "Не удалось обновить цену",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleEditRequest = (request: ShipmentRequest) => {
     setSelectedRequest(request);  
     setEditData({
@@ -162,12 +206,13 @@ export default function RequestsManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Управление заявками
-        </h1>
-      </div>
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Управление заявками
+          </h1>
+        </div>
 
       {/* Filters */}
       <Card>
@@ -251,11 +296,11 @@ export default function RequestsManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Номер</TableHead>
-                    <TableHead>Груз</TableHead>
+                    <TableHead>Информация о грузе</TableHead>
                     <TableHead>Маршрут</TableHead>
+                    <TableHead>Контакты</TableHead>
                     <TableHead>Статус</TableHead>
                     <TableHead>Цена</TableHead>
-                    <TableHead>Дата</TableHead>
                     <TableHead>Действия</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -265,47 +310,155 @@ export default function RequestsManagement() {
                       <TableCell className="font-medium">
                         {request.requestNumber}
                       </TableCell>
-                      <TableCell>
-                        <div>
+                      <TableCell className="max-w-xs">
+                        <div className="space-y-2">
                           <div className="font-medium">{request.cargoName}</div>
-                          {request.cargoWeightKg && (
-                            <div className="text-sm text-gray-500">
-                              {request.cargoWeightKg} кг
+                          
+                          <div className="text-sm text-gray-600 space-y-1">
+                            {request.cargoWeightKg && (
+                              <div>Вес: {request.cargoWeightKg} кг</div>
+                            )}
+                            {request.cargoVolumeM3 && (
+                              <div>Объем: {request.cargoVolumeM3} м³</div>
+                            )}
+                            {request.cargoDimensions && (
+                              <div>Габариты: {request.cargoDimensions}</div>
+                            )}
+                            {request.specialRequirements && (
+                              <div className="text-orange-600 font-medium">Особые требования: {request.specialRequirements}</div>
+                            )}
+                          </div>
+
+                          {request.cargoPhotos && request.cargoPhotos.length > 0 && (
+                            <div className="space-y-1">
+                              <div className="text-xs text-blue-600 font-medium">
+                                Фотографии груза ({request.cargoPhotos.length})
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {request.cargoPhotos.slice(0, 3).map((photo: string, index: number) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => window.open(photo, '_blank')}
+                                    className="w-12 h-12 rounded border overflow-hidden hover:opacity-75 transition-opacity"
+                                  >
+                                    <img
+                                      src={photo}
+                                      alt={`Фото ${index + 1}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </button>
+                                ))}
+                                {request.cargoPhotos.length > 3 && (
+                                  <div className="w-12 h-12 rounded border bg-gray-100 flex items-center justify-center text-xs text-gray-500">
+                                    +{request.cargoPhotos.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {request.desiredShipmentDatetime && (
+                            <div className="text-xs text-purple-600">
+                              Желаемая дата: {format(new Date(request.desiredShipmentDatetime), "dd.MM.yyyy HH:mm", { locale: ru })}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <div className="text-sm space-y-2">
+                          <div className="space-y-1">
+                            <div className="font-medium text-green-700">Загрузка:</div>
+                            {request.loadingCity && <div className="text-xs">{request.loadingCity}</div>}
+                            <div>{request.loadingAddress}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium text-red-700">Выгрузка:</div>
+                            {request.unloadingCity && <div className="text-xs">{request.unloadingCity}</div>}
+                            <div>{request.unloadingAddress}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <div className="text-xs space-y-2">
+                          {request.loadingContactPerson && (
+                            <div>
+                              <div className="font-medium">Отправитель:</div>
+                              <div>{request.loadingContactPerson}</div>
+                              {request.loadingContactPhone && <div>Тел: {request.loadingContactPhone}</div>}
+                            </div>
+                          )}
+                          {request.unloadingContactPerson && (
+                            <div>
+                              <div className="font-medium">Получатель:</div>
+                              <div>{request.unloadingContactPerson}</div>
+                              {request.unloadingContactPhone && <div>Тел: {request.unloadingContactPhone}</div>}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          <div>От: {request.loadingAddress}</div>
-                          <div>До: {request.unloadingAddress}</div>
+                        <div className="space-y-2">
+                          <Select
+                            value={request.status}
+                            onValueChange={(newStatus) => handleQuickStatusUpdate(request.id, newStatus)}
+                          >
+                            <SelectTrigger className="h-8 w-full">
+                              <SelectValue>
+                                <Badge className={statusColors[request.status as keyof typeof statusColors]}>
+                                  {statusLabels[request.status as keyof typeof statusLabels]}
+                                </Badge>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(statusLabels).map(([key, label]) => (
+                                <SelectItem key={key} value={key}>{label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="text-xs text-gray-500">
+                            Создано: {format(new Date(request.createdAt), "dd.MM.yyyy HH:mm", { locale: ru })}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusColors[request.status as keyof typeof statusColors]}>
-                          {statusLabels[request.status as keyof typeof statusLabels]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {request.priceKzt ? (
-                          <div className="font-medium">
-                            {parseFloat(request.priceKzt).toLocaleString()} ₸
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="number"
+                              placeholder="Цена"
+                              value={request.priceKzt || ""}
+                              onChange={(e) => handleQuickPriceUpdate(request.id, e.target.value)}
+                              onBlur={(e) => handleSavePrice(request.id, e.target.value)}
+                              className="h-8 w-24 text-sm"
+                            />
+                            <span className="text-sm">₸</span>
                           </div>
-                        ) : (
-                          <span className="text-gray-400">Не указана</span>
-                        )}
+                          {request.priceNotes && (
+                            <div className="text-xs text-gray-500 max-w-32 truncate" title={request.priceNotes}>
+                              Примечание: {request.priceNotes}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        {format(new Date(request.createdAt), "dd.MM.yyyy", { locale: ru })}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
+                        <div className="flex flex-col space-y-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditRequest(request)}
+                            className="h-8 px-2 text-xs"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3 mr-1" />
+                            Детали
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/request/${request.id}`, '_blank')}
+                            className="h-8 px-2 text-xs"
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Открыть
                           </Button>
                         </div>
                       </TableCell>
@@ -411,6 +564,38 @@ export default function RequestsManagement() {
                 </CardContent>
               </Card>
 
+              {/* Cargo Photos */}
+              {selectedRequest?.cargoPhotos && selectedRequest.cargoPhotos.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-lg">
+                      <Package className="w-5 h-5 mr-2" />
+                      Фотографии груза
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {selectedRequest.cargoPhotos.map((photo: string, index: number) => (
+                        <button
+                          key={index}
+                          onClick={() => window.open(photo, '_blank')}
+                          className="aspect-square rounded-lg overflow-hidden border border-border hover:opacity-75 transition-opacity bg-gray-50"
+                        >
+                          <img
+                            src={photo}
+                            alt={`Фото груза ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Нажмите на фото для увеличения
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Transport */}
               <Card>
                 <CardHeader>
@@ -491,6 +676,7 @@ export default function RequestsManagement() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </Layout>
   );
 }
