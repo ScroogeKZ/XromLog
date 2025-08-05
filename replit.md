@@ -56,6 +56,19 @@ Contact information: Phone +7 (702) 997 00 94, Email nurbek@creativegroup.kz
 ✓ Added role-based data filtering in API endpoints for proper data separation (Aug 5, 2025)
 ✓ Created user management page for administrators to change user roles (Aug 5, 2025)
 ✓ Database backup created: backup_20250805_064639.sql stored in /backups directory (Aug 5, 2025)
+✓ Added phone number requirement to public shipment request forms (Aug 5, 2025)
+✓ Created employee profile management system with personal data editing (Aug 5, 2025)
+✓ Implemented profile page for updating firstName, lastName, position, age, and phone (Aug 5, 2025)
+✓ Added profile navigation link in sidebar user section with modern UI (Aug 5, 2025)
+✓ Enhanced user schema with additional personal information fields (Aug 5, 2025)
+✓ Created API endpoints for profile management with validation (Aug 5, 2025)
+✓ Implemented password change functionality in employee profiles with security validation (Aug 5, 2025)
+✓ Added tabbed interface to profile page separating personal data and security settings (Aug 5, 2025)
+✓ Created secure password change API endpoint with current password verification (Aug 5, 2025)
+✓ Added password strength requirements and user guidance in profile interface (Aug 5, 2025)
+✓ Implemented automatic request linking by phone number - public requests now auto-assign to existing users (Aug 5, 2025)
+✓ Enhanced phone number matching with normalization to handle different formats and spacing (Aug 5, 2025)
+✓ Added smart user lookup system for seamless request ownership transfer when phone numbers match (Aug 5, 2025)
 
 # System Architecture
 

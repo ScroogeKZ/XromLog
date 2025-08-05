@@ -14,7 +14,9 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByPhone(phone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserProfile(id: number, profile: any): Promise<User | undefined>;
 
   // Shipment request methods
   getShipmentRequests(filters?: {
@@ -65,12 +67,49 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    // Normalize phone number by removing all non-digit characters except +
+    const normalizedPhone = phone.replace(/[\s\-\(\)]/g, '');
+    
+    // Try exact match first
+    let [user] = await db.select().from(users).where(eq(users.phone, phone));
+    
+    // If not found, try normalized match
+    if (!user) {
+      const [userNormalized] = await db.select().from(users).where(eq(users.phone, normalizedPhone));
+      user = userNormalized;
+    }
+    
+    // If still not found, try matching against normalized existing phone numbers
+    if (!user) {
+      const allUsers = await db.select().from(users).where(sql`${users.phone} IS NOT NULL`);
+      for (const existingUser of allUsers) {
+        const existingNormalized = existingUser.phone?.replace(/[\s\-\(\)]/g, '');
+        if (existingNormalized === normalizedPhone) {
+          user = existingUser;
+          break;
+        }
+      }
+    }
+    
+    return user || undefined;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(insertUser)
       .returning();
     return user;
+  }
+
+  async updateUserProfile(id: number, profile: any): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(profile)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   async getShipmentRequests(filters: {
@@ -247,7 +286,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(shipmentRequests.desiredShipmentDatetime));
   }
 
-  async getAllUsers(): Promise<Array<{ id: number; username: string; role: string; createdAt: Date }>> {
+  async getAllUsers(): Promise<Array<{ id: number; username: string; role: string; createdAt: Date | null }>> {
     const usersList = await db
       .select({
         id: users.id,
@@ -355,6 +394,42 @@ export class DatabaseStorage implements IStorage {
         avgOrderValue: kpiData.avgOrderValue,
       },
     };
+  }
+
+  async changeUserPassword(userId: number, currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Get current user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+
+      if (!user) {
+        return { success: false, message: "Пользователь не найден" };
+      }
+
+      // Verify current password
+      const bcrypt = await import("bcrypt");
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      
+      if (!isCurrentPasswordValid) {
+        return { success: false, message: "Неверный текущий пароль" };
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await db
+        .update(users)
+        .set({ password: hashedNewPassword })
+        .where(eq(users.id, userId));
+
+      return { success: true, message: "Пароль успешно изменен" };
+    } catch (error) {
+      console.error("Error changing password:", error);
+      return { success: false, message: "Ошибка при смене пароля" };
+    }
   }
 }
 

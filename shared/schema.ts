@@ -9,6 +9,11 @@ export const users = pgTable("users", {
   username: varchar("username", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
   role: varchar("role", { length: 50 }).notNull().default("employee"), // "employee" or "manager"
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  position: varchar("position", { length: 255 }),
+  age: integer("age"),
+  phone: varchar("phone", { length: 20 }),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -64,6 +69,29 @@ export const insertUserSchema = createInsertSchema(users).pick({
   // role удалено - назначается автоматически администратором
 });
 
+// Profile update schema for users
+export const updateUserProfileSchema = z.object({
+  firstName: z.string().min(1, "Имя обязательно"),
+  lastName: z.string().min(1, "Фамилия обязательна"),
+  position: z.string().min(1, "Должность обязательна"),
+  age: z.number().min(18, "Возраст должен быть не менее 18 лет").max(100, "Возраст должен быть не более 100 лет"),
+  phone: z.string().min(1, "Номер телефона обязателен"),
+});
+
+export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
+
+// Password change schema
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Текущий пароль обязателен"),
+  newPassword: z.string().min(6, "Новый пароль должен содержать минимум 6 символов"),
+  confirmPassword: z.string().min(1, "Подтверждение пароля обязательно"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Пароли не совпадают",
+  path: ["confirmPassword"],
+});
+
+export type ChangePassword = z.infer<typeof changePasswordSchema>;
+
 export const insertShipmentRequestSchema = createInsertSchema(shipmentRequests).omit({
   id: true,
   requestNumber: true,
@@ -92,7 +120,7 @@ export const publicInsertShipmentRequestSchema = z.object({
   cargoPhotos: z.array(z.string()).optional().nullable(),
   // Client contact fields for public requests
   clientName: z.string().optional().nullable(),
-  clientPhone: z.string().optional().nullable(),
+  clientPhone: z.string().min(1, "Номер телефона обязателен"),
   clientEmail: z.string().optional().nullable(),
 });
 

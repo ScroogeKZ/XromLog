@@ -28,32 +28,36 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="w-12 h-8 sm:w-16 sm:h-10 bg-white border border-gray-200 rounded flex items-center justify-center p-1">
-                <img 
-                  src={logoPath} 
-                  alt="ХРОМ-KZ" 
-                  className="w-full h-full object-contain"
-                />
+      <header className="bg-white/80 backdrop-blur-xl border-b border-white/20 sticky top-0 z-50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-16 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center p-2 shadow-lg">
+                  <img 
+                    src={logoPath} 
+                    alt="ХРОМ-KZ" 
+                    className="w-full h-full object-contain brightness-0 invert"
+                  />
+                </div>
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">ХРОМ-KZ</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Система управления логистикой</p>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  ХРОМ-KZ
+                </h1>
+                <p className="text-sm text-gray-600">Современная логистическая система</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 text-xs sm:text-sm hidden sm:flex">
-                <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                Прием заявок 24/7
+            <div className="flex items-center space-x-4">
+              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200 transition-colors">
+                <ShieldCheck className="w-4 h-4 mr-2" />
+                Работаем 24/7
               </Badge>
               <Link href="/login">
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm">
-                  Вход в систему
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                  Войти в систему
                 </Button>
               </Link>
             </div>
@@ -62,222 +66,276 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground mb-4 sm:mb-6 leading-tight">
-            Система управления логистическими заявками
-          </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto px-2">
-            Корпоративная система ХРОМ-KZ для управления заявками на логистические услуги. 
-            Создавайте заявки, отслеживайте статусы и управляйте процессом доставки.
-          </p>
-          
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto mb-8 sm:mb-12">
-            <div className="professional-card p-4 sm:p-6 text-center hover-lift card-shadow">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">1000+</h3>
-              <p className="text-muted-foreground text-xs sm:text-sm">Заявок обработано</p>
-            </div>
-            <div className="professional-card p-4 sm:p-6 text-center hover-lift card-shadow">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">24/7</h3>
-              <p className="text-muted-foreground text-xs sm:text-sm">Прием заявок</p>
-            </div>
-            <div className="professional-card p-4 sm:p-6 text-center hover-lift card-shadow">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">50+</h3>
-              <p className="text-muted-foreground text-xs sm:text-sm">Городов покрытия</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Action Cards */}
-      <section className="pb-8 sm:pb-12 lg:pb-16">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-            
-            {/* Астана заказ */}
-            <Card className="professional-card hover-lift card-shadow-lg">
-              <CardHeader className="text-center pb-3 sm:pb-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                </div>
-                <CardTitle className="text-lg sm:text-xl font-semibold text-foreground">
-                  Доставка по Астане
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center px-3 sm:px-6">
-                <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-                  Создание заявок на доставку грузов в пределах города Астана. 
-                  Управление местными логистическими задачами.
-                </p>
-                <ul className="text-xs text-muted-foreground mb-4 sm:mb-6 space-y-1 sm:space-y-2 text-left">
-                  <li>• Автоматическая нумерация заявок</li>
-                  <li>• Контроль статусов доставки</li>
-                  <li>• Управление контактами</li>
-                </ul>
-                <Link href="/create-order/astana">
-                  <Button size="sm" className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-3">
-                    <Package className="w-3 h-3 mr-1" />
-                    <span className="whitespace-nowrap">Заявка Астана</span>
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Межгородской заказ */}
-            <Card className="professional-card hover-lift card-shadow-lg">
-              <CardHeader className="text-center pb-3 sm:pb-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Navigation className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                </div>
-                <CardTitle className="text-lg sm:text-xl font-semibold text-foreground">
-                  Межгородские перевозки
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center px-3 sm:px-6">
-                <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-                  Создание заявок на межгородские перевозки. 
-                  Управление дальними логистическими маршрутами.
-                </p>
-                <ul className="text-xs text-muted-foreground mb-4 sm:mb-6 space-y-1 sm:space-y-2 text-left">
-                  <li>• Маршруты по всему Казахстану</li>
-                  <li>• Контроль сроков доставки</li>
-                  <li>• Управление документооборотом</li>
-                </ul>
-                <Link href="/create-order/intercity">
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs py-2 px-3">
-                    <Truck className="w-3 h-3 mr-1" />
-                    <span className="whitespace-nowrap">Межгород</span>
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Отслеживание заказа */}
-            <Card className="professional-card hover-lift card-shadow-lg">
-              <CardHeader className="text-center pb-3 sm:pb-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <Search className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                </div>
-                <CardTitle className="text-lg sm:text-xl font-semibold text-foreground">
-                  Отслеживание заявки
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center px-3 sm:px-6">
-                <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-                  Проверьте текущий статус заявки по номеру. 
-                  Актуальная информация о ходе выполнения.
-                </p>
-                <div className="mb-3 sm:mb-4">
-                  <Label htmlFor="tracking-id" className="text-xs font-medium text-muted-foreground mb-2 block">
-                    Номер заявки
-                  </Label>
-                  <Input
-                    id="tracking-id"
-                    placeholder="AST-2025-001"
-                    value={trackingId}
-                    onChange={(e) => setTrackingId(e.target.value)}
-                    className="h-8 sm:h-9 text-xs sm:text-sm"
-                    onKeyPress={(e) => e.key === 'Enter' && handleTrackOrder()}
-                  />
-                </div>
-                <Button 
-                  size="sm" 
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs py-2 px-3"
-                  onClick={handleTrackOrder}
-                  disabled={!trackingId.trim()}
-                >
-                  <Search className="w-3 h-3 mr-1" />
-                  <span className="whitespace-nowrap">Отследить</span>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-8 sm:py-12 lg:py-16 bg-muted/50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="text-center mb-8 sm:mb-12">
-            <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">
-              Возможности системы ХРОМ-KZ
-            </h3>
-            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground px-2">
-              Эффективное управление логистическими процессами компании
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 text-center">
+          <div className="mb-8">
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                Управление логистикой
+              </span>
+              <br />
+              <span className="text-gray-700">нового поколения</span>
+            </h2>
+            <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Цифровая экосистема для комплексного управления грузоперевозками, 
+              отслеживания доставок и оптимизации логистических процессов
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            <div className="text-center professional-card p-4 sm:p-6 hover-lift card-shadow">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          {/* Feature Highlights */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Truck className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Контроль сроков</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">Автоматическое отслеживание и уведомления о статусах доставки</p>
+              <h3 className="text-xl font-bold mb-3 text-gray-800">Умное отслеживание</h3>
+              <p className="text-gray-600">Отслеживайте грузы в реальном времени с точной геолокацией</p>
             </div>
             
-            <div className="text-center professional-card p-4 sm:p-6 hover-lift card-shadow">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Package className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Учет и отчетность</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">Полная история заявок и детальная аналитика работы</p>
+              <h3 className="text-xl font-bold mb-3 text-gray-800">Быстрая подача заявок</h3>
+              <p className="text-gray-600">Создавайте заявки за минуты через удобный интерфейс</p>
             </div>
             
-            <div className="text-center professional-card p-4 sm:p-6 hover-lift card-shadow sm:col-span-2 lg:col-span-1">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="bg-white/70 backdrop-blur-sm p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Доступ персонала</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">Ролевая система доступа для сотрудников и менеджеров</p>
+              <h3 className="text-xl font-bold mb-3 text-gray-800">Полная безопасность</h3>
+              <p className="text-gray-600">Защищенная передача данных и контроль доступа</p>
+            </div>
+          </div>
+          {/* Action Section */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-center mb-6 text-gray-800">Отследить доставку</h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="tracking" className="text-sm font-medium text-gray-700">Номер заявки</Label>
+                <Input
+                  id="tracking"
+                  placeholder="Введите номер заявки (например: AST-2025-001)"
+                  value={trackingId}
+                  onChange={(e) => setTrackingId(e.target.value)}
+                  className="mt-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <Button 
+                onClick={handleTrackOrder}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Отследить заявку
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Service Cards */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="text-center mb-16">
+            <h3 className="text-4xl font-bold text-gray-800 mb-4">Наши услуги</h3>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Комплексные решения для всех ваших логистических потребностей
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Астана заказ */}
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div className="flex items-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mr-4">
+                  <MapPin className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-2xl font-bold text-gray-800">Доставка по Астане</h4>
+                  <p className="text-gray-600">Городские перевозки</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center text-gray-600">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                  Быстрая доставка в пределах города
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                  Отслеживание в реальном времени
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                  Профессиональная обработка грузов
+                </div>
+              </div>
+              
+              <Link href="/create-order/astana">
+                <Button className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium py-3">
+                  <Package className="w-4 h-4 mr-2" />
+                  Создать заявку на доставку
+                </Button>
+              </Link>
+            </div>
+
+            {/* Межгородские перевозки */}
+            <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+              <div className="flex items-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mr-4">
+                  <Navigation className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-2xl font-bold text-gray-800">Межгородские перевозки</h4>
+                  <p className="text-gray-600">Дальние маршруты</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center text-gray-600">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Доставка по всему Казахстану
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Оптимальные маршруты и сроки
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Полное документооборот
+                </div>
+              </div>
+              
+              <Link href="/create-order/intercity">
+                <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3">
+                  <Truck className="w-4 h-4 mr-2" />
+                  Создать межгородскую заявку
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-8 sm:py-12 lg:py-16">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8">
-          <Card className="professional-card card-shadow-lg text-center p-4 sm:p-6 lg:p-8">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
-              Техническая поддержка
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-2">
-              Обращайтесь к IT-отделу ХРОМ-KZ за помощью по работе с системой
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs text-muted-foreground">Телефон</p>
-                  <p className="text-sm font-semibold text-foreground">+7 (702) 997 00 94</p>
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="text-center mb-16">
+            <h3 className="text-4xl font-bold text-gray-800 mb-4">Свяжитесь с нами</h3>
+            <p className="text-xl text-gray-600">Готовы помочь с вашими логистическими потребностями</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-12">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h4 className="text-3xl font-bold text-gray-800 mb-6">Получите консультацию</h4>
+                <p className="text-lg text-gray-600 mb-8">
+                  Наши специалисты помогут выбрать оптимальное решение для ваших грузоперевозок
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                      <Phone className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">+7 (702) 997 00 94</p>
+                      <p className="text-gray-600">Звонки принимаются 24/7</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
+                      <Mail className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">nurbek@creativegroup.kz</p>
+                      <p className="text-gray-600">Ответим в течение часа</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs text-muted-foreground">Email</p>
-                  <p className="text-xs sm:text-sm font-semibold text-foreground break-all">nurbek@creativegroup.kz</p>
+              
+              <div className="bg-white rounded-2xl p-8 shadow-xl">
+                <h5 className="text-xl font-bold text-gray-800 mb-6">Преимущества ХРОМ-KZ</h5>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3 mt-1">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Цифровое управление</p>
+                      <p className="text-gray-600 text-sm">Полная автоматизация процессов</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-3 mt-1">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Прозрачность процессов</p>
+                      <p className="text-gray-600 text-sm">Отслеживание на каждом этапе</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center mr-3 mt-1">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Надежность доставки</p>
+                      <p className="text-gray-600 text-sm">99% выполнения в срок</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-12 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <img 
+                  src={logoPath} 
+                  alt="ХРОМ-KZ" 
+                  className="w-full h-full object-contain brightness-0 invert"
+                />
+              </div>
+              <h4 className="text-2xl font-bold">ХРОМ-KZ</h4>
+            </div>
+            
+            <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
+              Современная система управления логистикой для оптимизации грузоперевозок 
+              и повышения эффективности доставки
+            </p>
+            
+            <div className="flex justify-center space-x-8 mb-6">
+              <div className="text-center">
+                <p className="text-gray-400 text-sm">Телефон поддержки</p>
+                <p className="font-semibold">+7 (702) 997 00 94</p>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-400 text-sm">Email</p>
+                <p className="font-semibold">nurbek@creativegroup.kz</p>
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-700 pt-6">
+              <p className="text-gray-400 text-sm">
+                © 2025 ХРОМ-KZ. Все права защищены. Система управления логистикой.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -25,6 +25,7 @@ import MyOrders from "@/pages/my-orders";
 import MyDeliveries from "@/pages/my-deliveries";
 import Analytics from "@/pages/analytics";
 import UserManagement from "@/pages/user-management";
+import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -160,6 +161,10 @@ function Router() {
       
       <Route path="/my-deliveries">
         <MyDeliveries />
+      </Route>
+      
+      <Route path="/profile">
+        {isAuthenticated ? <Profile /> : <Redirect to="/login" />}
       </Route>
       
       <Route component={NotFound} />

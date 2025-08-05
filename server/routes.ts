@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertShipmentRequestSchema, publicInsertShipmentRequestSchema, updateShipmentRequestSchema, insertUserSchema } from "@shared/schema";
+import { insertShipmentRequestSchema, publicInsertShipmentRequestSchema, updateShipmentRequestSchema, insertUserSchema, updateUserProfileSchema, changePasswordSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
@@ -78,8 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const user = await storage.createUser({
         username: userData.username,
-        password: hashedPassword,
-        role: "employee" // Роли назначаются только администратором
+        password: hashedPassword
       });
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
@@ -100,12 +99,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
     res.json({
-      user: {
-        id: req.user.id,
-        username: req.user.username,
-        role: req.user.role
-      }
+      user: req.user
     });
+  });
+
+  // Update user profile
+  app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
+    try {
+      const profileData = updateUserProfileSchema.parse(req.body);
+      const userId = req.user.id;
+      
+      const updatedUser = await storage.updateUserProfile(userId, profileData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({
+        user: updatedUser,
+        message: "Профиль успешно обновлен"
+      });
+    } catch (error) {
+      console.error("Update profile error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Ошибка валидации", 
+          errors: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Change user password
+  app.put("/api/auth/change-password", authenticateToken, async (req: any, res) => {
+    try {
+      const passwordData = changePasswordSchema.parse(req.body);
+      const userId = req.user.id;
+      
+      const result = await storage.changeUserPassword(
+        userId, 
+        passwordData.currentPassword, 
+        passwordData.newPassword
+      );
+      
+      if (!result.success) {
+        return res.status(400).json({ message: result.message });
+      }
+      
+      res.json({ message: result.message });
+    } catch (error) {
+      console.error("Change password error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Ошибка валидации", 
+          errors: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Shipment request routes
@@ -176,6 +234,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use the public schema for validation
       const publicData = publicInsertShipmentRequestSchema.parse(req.body);
       
+      // Check if user exists with this phone number
+      let createdByUserId = 1; // Default system user for public requests
+      if (publicData.clientPhone) {
+        const existingUser = await storage.getUserByPhone(publicData.clientPhone);
+        if (existingUser) {
+          createdByUserId = existingUser.id;
+          console.log(`✓ Заявка автоматически связана с пользователем: ${existingUser.firstName} ${existingUser.lastName} (ID: ${existingUser.id})`);
+        }
+      }
+      
       // Transform the data for storage
       const requestData = {
         category: publicData.category,
@@ -199,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clientName: publicData.clientName || null,
         clientPhone: publicData.clientPhone || null,
         clientEmail: publicData.clientEmail || null,
-        createdByUserId: 1 // Default system user for public requests
+        createdByUserId: createdByUserId
       };
       
       const request = await storage.createShipmentRequest(requestData);

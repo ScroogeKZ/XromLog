@@ -57,89 +57,92 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-muted flex items-center justify-center py-6 px-3 sm:py-12 sm:px-4 lg:px-8">
-      <div className="max-w-md w-full space-y-6 sm:space-y-8">
-        <div className="text-center">
-          <div className="mx-auto w-24 h-16 sm:w-32 sm:h-20 bg-white border border-gray-200 rounded-lg flex items-center justify-center card-shadow-lg p-2 sm:p-3">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700"></div>
+      <div className="absolute inset-0 bg-black/20"></div>
+      
+      <div className="relative max-w-md w-full">
+        {/* Logo and header */}
+        <div className="text-center mb-8">
+          <div className="w-24 h-16 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
             <img 
               src={logoPath} 
               alt="ХРОМ-KZ" 
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain p-3 brightness-0 invert"
             />
           </div>
-          <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-bold text-foreground">
-            ХРОМ-KZ
+          <h2 className="text-4xl font-bold text-white mb-2">
+            Добро пожаловать
           </h2>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-muted-foreground">
+          <p className="text-blue-100 text-lg">
             Система управления логистикой
           </p>
         </div>
 
-        <Card className="professional-card card-shadow-lg">
-          <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
-            <CardTitle className="text-xl sm:text-2xl font-semibold">Вход в систему</CardTitle>
-            <CardDescription className="text-xs sm:text-sm mt-1">
-              Введите учетные данные для доступа
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-4 sm:px-6">
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-              <div className="space-y-1 sm:space-y-2">
-                <Label htmlFor="username" className="text-xs sm:text-sm font-medium">Имя пользователя</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="Введите имя пользователя"
-                  className="h-9 sm:h-10 text-sm"
-                />
-              </div>
-              <div className="space-y-1 sm:space-y-2">
-                <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Пароль</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Введите пароль"
-                  className="h-9 sm:h-10 text-sm"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm py-2"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Вход...</span>
-                  </div>
-                ) : (
-                  "Войти в систему"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        {/* Login Form */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="username" className="text-white font-medium mb-2 block">
+                Имя пользователя
+              </Label>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Введите имя пользователя"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white/40 focus:ring-white/20 h-12"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="password" className="text-white font-medium mb-2 block">
+                Пароль
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Введите пароль"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white/40 focus:ring-white/20 h-12"
+              />
+            </div>
+            
+            <Button
+              type="submit"
+              className="w-full bg-white text-blue-600 hover:bg-white/90 font-semibold py-3 h-12 text-lg shadow-xl transition-all duration-300 hover:shadow-2xl"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <span>Входим в систему...</span>
+                </div>
+              ) : (
+                "Войти в систему"
+              )}
+            </Button>
+          </form>
+        </div>
 
         {/* Navigation Links */}
-        <div className="text-center space-y-3">
-          <div className="text-sm text-muted-foreground">
+        <div className="text-center space-y-4 mt-8">
+          <div className="text-white/80">
             Нет аккаунта?{" "}
-            <Link href="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+            <Link href="/register" className="text-white font-semibold hover:text-blue-200 transition-colors">
               Зарегистрироваться
             </Link>
           </div>
           
-          <div className="pt-2">
-            <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-4 h-4 mr-1" />
+          <div>
+            <Link href="/" className="inline-flex items-center text-white/60 hover:text-white transition-colors">
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Вернуться на главную
             </Link>
           </div>

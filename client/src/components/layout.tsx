@@ -152,6 +152,8 @@ export function Layout({ children }: LayoutProps) {
         return "Аналитика и KPI";
       case "/users":
         return "Управление пользователями";
+      case "/profile":
+        return "Профиль сотрудника";
       default:
         if (location.startsWith("/request/")) {
           return "Детали заявки";
@@ -161,37 +163,37 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-border card-shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="flex items-center justify-center h-16 px-6 border-b border-border">
+        <div className="flex items-center justify-center h-20 px-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white border border-gray-200 rounded-xl flex items-center justify-center shadow-lg p-1">
+            <div className="w-12 h-8 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center p-1">
               <img 
                 src={logoPath} 
                 alt="ХРОМ-KZ" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain brightness-0 invert"
               />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">ХРОМ-KZ</h1>
-              <p className="text-xs text-muted-foreground">Корпоративная система</p>
+              <h1 className="text-xl font-bold text-white">ХРОМ-KZ</h1>
+              <p className="text-xs text-blue-100">Логистическая система</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-4 py-6 space-y-2">
           {navigation.map((item) => (
             <Link key={item.name} href={item.href} className={cn(
-              "flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover-lift",
+              "flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md",
               item.current
-                ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                : "text-gray-600 hover:text-gray-900 hover:bg-blue-50"
             )}>
               <item.icon className="w-5 h-5" />
               <span>{item.name}</span>
@@ -200,28 +202,35 @@ export function Layout({ children }: LayoutProps) {
         </nav>
 
         {/* User Info */}
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <UserIcon className="w-4 h-4 text-white" />
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <Link 
+            href="/profile"
+            className={cn(
+              "flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 mb-3 hover:shadow-md",
+              location === "/profile" ? "bg-blue-100 text-blue-900" : "hover:bg-white"
+            )}
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <UserIcon className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {user?.username || "Пользователь"}
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || "Пользователь"}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {user?.role === "manager" ? "Менеджер" : "Сотрудник"}
+              <p className="text-xs text-gray-500 truncate">
+                {user?.role === "manager" ? "Менеджер логистики" : "Сотрудник"}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="w-full text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors duration-300"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Выйти из системы
+          </Button>
         </div>
       </aside>
 
@@ -234,37 +243,41 @@ export function Layout({ children }: LayoutProps) {
       )}
 
       {/* Main content */}
-      <main className="flex-1 lg:ml-0">
+      <div className="flex-1 lg:ml-0">
         {/* Header */}
-        <header className="glass-card card-shadow px-6 py-4 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-200 h-20 flex items-center justify-between px-6 shadow-sm">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
-              onClick={() => setIsSidebarOpen(true)}
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden text-gray-600 hover:text-gray-900"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </Button>
-            <h2 className="text-xl font-medium text-gray-900">
-              {getPageTitle()}
-            </h2>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{getPageTitle()}</h1>
+              <p className="text-sm text-gray-500">ХРОМ-KZ Логистическая система</p>
+            </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="text-gray-500">
-              <Bell className="w-5 h-5" />
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" className="relative p-2 rounded-full hover:bg-blue-50 transition-colors">
+              <Bell className="w-5 h-5 text-gray-600" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-pulse"></span>
             </Button>
-            <Button variant="ghost" size="sm" className="text-gray-500">
-              <Settings className="w-5 h-5" />
+            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-blue-50 transition-colors">
+              <Settings className="w-5 h-5 text-gray-600" />
             </Button>
           </div>
         </header>
 
         {/* Page content */}
-        <div className="p-6">
-          {children}
-        </div>
-      </main>
+        <main className="flex-1 p-6 bg-gray-50 min-h-screen">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
