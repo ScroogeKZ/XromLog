@@ -4,6 +4,12 @@ export interface User {
   id: number;
   username: string;
   role: string;
+  firstName?: string;
+  lastName?: string;
+  position?: string;
+  age?: number;
+  phone?: string;
+  createdAt?: string;
 }
 
 export interface AuthResponse {
@@ -29,8 +35,8 @@ export const auth = {
     return data;
   },
 
-  async register(username: string, password: string, role: string = "employee"): Promise<AuthResponse> {
-    const response = await apiRequest("POST", "/api/auth/register", { username, password, role });
+  async register(username: string, password: string): Promise<AuthResponse> {
+    const response = await apiRequest("POST", "/api/auth/register", { username, password });
     const data = await response.json();
     
     authToken = data.token;

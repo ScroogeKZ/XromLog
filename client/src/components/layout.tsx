@@ -6,8 +6,6 @@ import {
   Plus, 
   BarChart3, 
   Menu, 
-  Bell, 
-  Settings, 
   LogOut,
   User as UserIcon,
   List,
@@ -22,6 +20,8 @@ import { auth } from "@/lib/auth";
 import type { User } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { NotificationsPanel } from "@/components/notifications-panel";
+import { SettingsPanel } from "@/components/settings-panel";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -261,13 +261,8 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="relative p-2 rounded-full hover:bg-blue-50 transition-colors">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-pulse"></span>
-            </Button>
-            <Button variant="ghost" size="sm" className="p-2 rounded-full hover:bg-blue-50 transition-colors">
-              <Settings className="w-5 h-5 text-gray-600" />
-            </Button>
+            <NotificationsPanel />
+            <SettingsPanel />
           </div>
         </header>
 
