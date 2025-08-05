@@ -40,6 +40,11 @@ export const shipmentRequests = pgTable("shipment_requests", {
   transportInfo: jsonb("transport_info"), // { "driver_name": "...", "driver_phone": "...", "vehicle_model": "...", "vehicle_plate": "..." }
   priceKzt: decimal("price_kzt", { precision: 10, scale: 2 }), // Price in KZT
   priceNotes: text("price_notes"), // Additional pricing notes
+  
+  // Client contact fields for public tracking
+  clientName: text("client_name"),
+  clientPhone: text("client_phone"),
+  clientEmail: text("client_email")
 });
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -94,8 +99,8 @@ export const publicInsertShipmentRequestSchema = z.object({
 export const updateShipmentRequestSchema = z.object({
   status: z.string().optional(),
   cargoName: z.string().optional(),
-  cargoWeightKg: z.string().optional().nullable(),
-  cargoVolumeM3: z.string().optional().nullable(),
+  cargoWeightKg: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoVolumeM3: z.union([z.string(), z.number()]).optional().nullable(),
   cargoDimensions: z.string().optional().nullable(),
   specialRequirements: z.string().optional().nullable(),
   loadingCity: z.string().optional().nullable(),
@@ -106,11 +111,11 @@ export const updateShipmentRequestSchema = z.object({
   unloadingAddress: z.string().optional(),
   unloadingContactPerson: z.string().optional().nullable(),
   unloadingContactPhone: z.string().optional().nullable(),
-  desiredShipmentDatetime: z.date().optional().nullable(),
+  desiredShipmentDatetime: z.union([z.date(), z.string()]).optional().nullable(),
   notes: z.string().optional().nullable(),
   cargoPhotos: z.array(z.string()).optional().nullable(),
   transportInfo: z.any().optional().nullable(),
-  priceKzt: z.string().optional().nullable(),
+  priceKzt: z.union([z.string(), z.number()]).optional().nullable(),
   priceNotes: z.string().optional().nullable(),
 });
 

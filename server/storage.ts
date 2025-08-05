@@ -36,7 +36,6 @@ export interface IStorage {
     delivered: number;
   }>;
   getShipmentRequestsByDateRange(startDate: Date, endDate: Date): Promise<ShipmentRequest[]>;
-  getShipmentRequestsByDateRange(startDate: Date, endDate: Date): Promise<ShipmentRequest[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -127,6 +126,24 @@ export class DatabaseStorage implements IStorage {
     return request || undefined;
   }
 
+  async getShipmentRequestsByUserId(userId: number): Promise<ShipmentRequest[]> {
+    const requests = await db
+      .select()
+      .from(shipmentRequests)
+      .where(eq(shipmentRequests.createdByUserId, userId))
+      .orderBy(desc(shipmentRequests.createdAt));
+    return requests;
+  }
+
+  async getShipmentRequestsByClientPhone(clientPhone: string): Promise<ShipmentRequest[]> {
+    const requests = await db
+      .select()
+      .from(shipmentRequests)
+      .where(eq(shipmentRequests.clientPhone, clientPhone))
+      .orderBy(desc(shipmentRequests.createdAt));
+    return requests;
+  }
+
   async createShipmentRequest(insertRequest: InsertShipmentRequest): Promise<ShipmentRequest> {
     // Generate request number
     const now = new Date();
@@ -158,7 +175,7 @@ export class DatabaseStorage implements IStorage {
     return request;
   }
 
-  async updateShipmentRequest(id: number, updateRequest: UpdateShipmentRequest): Promise<ShipmentRequest | undefined> {
+  async updateShipmentRequest(id: number, updateRequest: any): Promise<ShipmentRequest | undefined> {
     const [request] = await db
       .update(shipmentRequests)
       .set({

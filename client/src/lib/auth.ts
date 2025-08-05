@@ -58,10 +58,15 @@ export const auth = {
         const data = await response.json();
         currentUser = data.user;
         authToken = token;
+        console.log("Current user loaded:", data.user);
         return data.user;
+      } else {
+        console.log("Auth failed, clearing token");
+        this.logout();
       }
     } catch (error) {
       console.error("Error getting current user:", error);
+      this.logout();
     }
     
     return null;

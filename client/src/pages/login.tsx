@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
-import { Truck } from "lucide-react";
+import { useLocation, Link } from "wouter";
+import { Truck, ArrowLeft } from "lucide-react";
 import logoPath from "@assets/1571623_1754368340277.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,12 +23,21 @@ export default function Login() {
     setIsLoading(true);
 
     try {
+      console.log("Attempting login...");
       await auth.login(formData.username, formData.password);
+      console.log("Login successful, showing toast...");
+      
       toast({
         title: "Вход выполнен",
         description: "Добро пожаловать в корпоративную систему"
       });
-      setLocation("/dashboard");
+      
+      console.log("Redirecting to dashboard...");
+      // Force immediate redirect
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1000);
+      
     } catch (error: any) {
       toast({
         title: "Ошибка входа",
@@ -118,6 +127,23 @@ export default function Login() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Navigation Links */}
+        <div className="text-center space-y-3">
+          <div className="text-sm text-muted-foreground">
+            Нет аккаунта?{" "}
+            <Link href="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+              Зарегистрироваться
+            </Link>
+          </div>
+          
+          <div className="pt-2">
+            <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Вернуться на главную
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

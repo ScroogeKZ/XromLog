@@ -11,6 +11,13 @@ Contact information: Phone +7 (702) 997 00 94, Email nurbek@creativegroup.kz
 
 # Migration Status
 ✓ Successfully migrated from Replit Agent to standard environment (Aug 5, 2025)
+✓ Fixed authentication login and redirect issues - login now works correctly (Aug 5, 2025)
+✓ Added Telegram notification system for new shipment requests and status updates (Aug 5, 2025)
+✓ Fixed request update validation error - now accepts both string and number types for pricing (Aug 5, 2025)
+✓ Implemented role-based personal cabinets - employees see only their requests, managers see all (Aug 5, 2025)
+✓ Added public delivery tracking by phone number for external users (Aug 5, 2025)
+✓ Created separate navigation and permissions for employee vs manager roles (Aug 5, 2025)
+✓ Implemented complete user registration system with role selection (Aug 5, 2025)
 ✓ All packages installed and configured
 ✓ PostgreSQL database connected and migrations applied successfully (Aug 5, 2025)
 ✓ ХРОМ-KZ brand logo integrated across all pages (home, login, admin panel) (Aug 5, 2025)

@@ -5,6 +5,7 @@ import { insertShipmentRequestSchema, publicInsertShipmentRequestSchema, updateS
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import { telegramService } from "./telegram";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -107,18 +108,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shipment request routes
-  app.get("/api/shipment-requests", authenticateToken, async (req, res) => {
+  app.get("/api/shipment-requests", authenticateToken, async (req: any, res) => {
     try {
+      const user = req.user;
       const { status, category, search, page, limit } = req.query;
-      const result = await storage.getShipmentRequests({
-        status: status as string,
-        category: category as string,
-        search: search as string,
-        page: page ? parseInt(page as string) : undefined,
-        limit: limit ? parseInt(limit as string) : undefined,
-      });
       
-      res.json(result);
+      // If user is employee (not manager), only show their own requests
+      if (user.role === 'employee') {
+        const requests = await storage.getShipmentRequestsByUserId(user.id);
+        res.json({ requests, total: requests.length });
+      } else {
+        // Managers see all requests
+        const result = await storage.getShipmentRequests({
+          status: status as string,
+          category: category as string,
+          search: search as string,
+          page: page ? parseInt(page as string) : undefined,
+          limit: limit ? parseInt(limit as string) : undefined,
+        });
+        res.json(result);
+      }
     } catch (error) {
       console.error("Get requests error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -190,6 +199,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const request = await storage.createShipmentRequest(requestData);
+      
+      // Send Telegram notification for new request
+      try {
+        await telegramService.sendNewRequestNotification(request);
+      } catch (error) {
+        console.error("Failed to send Telegram notification:", error);
+        // Don't fail the request if notification fails
+      }
+      
       res.status(201).json({
         requestNumber: request.requestNumber,
         message: "Заявка успешно создана"
@@ -246,6 +264,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Personal cabinet - get user's own requests only
+  app.get("/api/my-requests", authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const requests = await storage.getShipmentRequestsByUserId(userId);
+      res.json({ requests });
+    } catch (error) {
+      console.error("Get my requests error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Public endpoint to get requests by phone number (for public users)
+  app.post("/api/requests-by-phone", async (req, res) => {
+    try {
+      const { clientPhone } = req.body;
+      
+      if (!clientPhone) {
+        return res.status(400).json({ message: "Номер телефона обязателен" });
+      }
+      
+      const requests = await storage.getShipmentRequestsByClientPhone(clientPhone);
+      
+      // Return only public information for security
+      const publicRequests = requests.map(request => ({
+        id: request.id,
+        requestNumber: request.requestNumber,
+        category: request.category,
+        status: request.status,
+        cargoName: request.cargoName,
+        cargoWeightKg: request.cargoWeightKg,
+        cargoVolumeM3: request.cargoVolumeM3,
+        loadingAddress: request.loadingAddress,
+        unloadingAddress: request.unloadingAddress,
+        loadingCity: request.loadingCity,
+        unloadingCity: request.unloadingCity,
+        desiredShipmentDatetime: request.desiredShipmentDatetime,
+        createdAt: request.createdAt,
+        priceKzt: request.priceKzt,
+        transportInfo: request.transportInfo
+      }));
+      
+      res.json({ requests: publicRequests });
+    } catch (error) {
+      console.error("Get requests by phone error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Protected route for shipment requests (authentication required)
   app.post("/api/shipment-requests", authenticateToken, async (req: any, res) => {
     try {
@@ -255,6 +322,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const request = await storage.createShipmentRequest(requestData);
+      
+      // Send Telegram notification for new request
+      try {
+        await telegramService.sendNewRequestNotification(request);
+      } catch (error) {
+        console.error("Failed to send Telegram notification:", error);
+      }
+      
       res.status(201).json(request);
     } catch (error) {
       console.error("Create request error:", error);
@@ -270,9 +345,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updateData = updateShipmentRequestSchema.parse(req.body);
       
-      const request = await storage.updateShipmentRequest(id, updateData);
+      // Convert number fields to strings for database storage
+      const processedUpdateData = {
+        ...updateData,
+        cargoWeightKg: updateData.cargoWeightKg !== undefined && updateData.cargoWeightKg !== null 
+          ? String(updateData.cargoWeightKg) : updateData.cargoWeightKg,
+        cargoVolumeM3: updateData.cargoVolumeM3 !== undefined && updateData.cargoVolumeM3 !== null 
+          ? String(updateData.cargoVolumeM3) : updateData.cargoVolumeM3,
+        priceKzt: updateData.priceKzt !== undefined && updateData.priceKzt !== null 
+          ? String(updateData.priceKzt) : updateData.priceKzt,
+        desiredShipmentDatetime: updateData.desiredShipmentDatetime instanceof Date 
+          ? updateData.desiredShipmentDatetime 
+          : updateData.desiredShipmentDatetime && typeof updateData.desiredShipmentDatetime === 'string'
+            ? new Date(updateData.desiredShipmentDatetime)
+            : updateData.desiredShipmentDatetime
+      };
+      
+      // Get the current request to track status changes
+      const currentRequest = await storage.getShipmentRequestById(id);
+      const oldStatus = currentRequest?.status;
+      
+      const request = await storage.updateShipmentRequest(id, processedUpdateData);
       if (!request) {
         return res.status(404).json({ message: "Request not found" });
+      }
+      
+      // Send Telegram notification if status changed
+      if (updateData.status && oldStatus && updateData.status !== oldStatus) {
+        try {
+          await telegramService.sendStatusUpdateNotification(request, oldStatus, updateData.status);
+        } catch (error) {
+          console.error("Failed to send Telegram status notification:", error);
+        }
       }
       
       res.json(request);
@@ -328,6 +432,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get reports error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Test endpoint to check Telegram connection
+  app.get("/api/telegram/test", authenticateToken, async (req, res) => {
+    try {
+      const isConnected = await telegramService.testConnection();
+      res.json({ 
+        connected: isConnected,
+        message: isConnected ? "Telegram подключен успешно" : "Ошибка подключения к Telegram"
+      });
+    } catch (error) {
+      console.error("Telegram test error:", error);
+      res.status(500).json({ message: "Ошибка тестирования Telegram" });
     }
   });
 

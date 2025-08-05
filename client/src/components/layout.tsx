@@ -11,7 +11,9 @@ import {
   LogOut,
   User as UserIcon,
   List,
-  Calendar
+  Calendar,
+  MessageCircle,
+  Package
 } from "lucide-react";
 import logoPath from "@assets/1571623_1754368340277.png";
 import { cn } from "@/lib/utils";
@@ -48,44 +50,69 @@ export function Layout({ children }: LayoutProps) {
     });
   };
 
-  const navigation = [
-    {
-      name: "Дашборд",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-      current: location === "/dashboard" || location === "/"
-    },
-    {
-      name: "Все заявки",
-      href: "/requests",
-      icon: List,
-      current: location === "/requests"
-    },
-    {
-      name: "Создать заявку",
-      href: "/create-request",
-      icon: Plus,
-      current: location === "/create-request"
-    },
-    {
-      name: "Календарь отгрузок",
-      href: "/calendar",
-      icon: Calendar,
-      current: location === "/calendar"
-    },
-    {
-      name: "Транспорт",
-      href: "/transport",
-      icon: Truck,
-      current: location === "/transport"
-    },
-    {
-      name: "Отчеты",
-      href: "/reports", 
-      icon: BarChart3,
-      current: location === "/reports"
-    }
-  ];
+  const getNavigation = () => {
+    const baseNavigation = [
+      {
+        name: "Дашборд",
+        href: "/dashboard",
+        icon: LayoutDashboard,
+        current: location === "/dashboard" || location === "/",
+        roles: ["employee", "manager"]
+      },
+      {
+        name: user?.role === "employee" ? "Мои заявки" : "Все заявки",
+        href: user?.role === "employee" ? "/my-orders" : "/requests",
+        icon: user?.role === "employee" ? Package : List,
+        current: location === "/requests" || location === "/my-orders",
+        roles: ["employee", "manager"]
+      },
+      {
+        name: "Создать заявку",
+        href: "/create-request",
+        icon: Plus,
+        current: location === "/create-request",
+        roles: ["employee", "manager"]
+      }
+    ];
+
+    const managerOnlyNavigation = [
+      {
+        name: "Календарь отгрузок",
+        href: "/calendar",
+        icon: Calendar,
+        current: location === "/calendar",
+        roles: ["manager"]
+      },
+      {
+        name: "Транспорт",
+        href: "/transport",
+        icon: Truck,
+        current: location === "/transport",
+        roles: ["manager"]
+      },
+      {
+        name: "Отчеты",
+        href: "/reports", 
+        icon: BarChart3,
+        current: location === "/reports",
+        roles: ["manager"]
+      },
+      {
+        name: "Telegram",
+        href: "/telegram",
+        icon: MessageCircle,
+        current: location === "/telegram",
+        roles: ["manager"]
+      }
+    ];
+
+    const userRole = user?.role || "employee";
+    const allNavigation = [...baseNavigation, ...managerOnlyNavigation];
+    
+    return allNavigation.filter(item => item.roles.includes(userRole));
+  };
+
+  const navigation = getNavigation();
 
   const getPageTitle = () => {
     switch (location) {
@@ -94,6 +121,8 @@ export function Layout({ children }: LayoutProps) {
         return "Панель управления";
       case "/requests":
         return "Управление заявками";
+      case "/my-orders":
+        return "Мои заявки";
       case "/create-request":
         return "Новая заявка";
       case "/calendar":
@@ -102,6 +131,8 @@ export function Layout({ children }: LayoutProps) {
         return "Управление транспортом";
       case "/reports":
         return "Отчеты и аналитика";
+      case "/telegram":
+        return "Настройки Telegram";
       default:
         if (location.startsWith("/request/")) {
           return "Детали заявки";

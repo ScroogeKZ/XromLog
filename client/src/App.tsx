@@ -9,6 +9,7 @@ import { auth } from "./lib/auth";
 // Pages
 import Home from "@/pages/home";
 import Login from "@/pages/login";
+import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import CreateRequest from "@/pages/create-request";
 import RequestsManagement from "@/pages/requests-management";
@@ -19,6 +20,9 @@ import Reports from "@/pages/reports";
 import TransportManagement from "@/pages/transport-management";
 import PublicRequest from "@/pages/public-request";
 import Calendar from "@/pages/calendar";
+import TelegramSettings from "@/pages/telegram-settings";
+import MyOrders from "@/pages/my-orders";
+import MyDeliveries from "@/pages/my-deliveries";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,11 +30,34 @@ function Router() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log("Checking authentication...");
       const user = await auth.getCurrentUser();
+      console.log("Authentication result:", !!user, user);
       setIsAuthenticated(!!user);
     };
     
     checkAuth();
+
+    // Listen for auth changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_token') {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check when focus returns to window
+    const handleFocus = () => {
+      checkAuth();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   return (
@@ -43,6 +70,7 @@ function Router() {
       
       {/* Admin routes - require authentication */}
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       
       <Route path="/dashboard">
         {isAuthenticated === null ? (
@@ -81,6 +109,18 @@ function Router() {
       
       <Route path="/reports">
         {isAuthenticated ? <Reports /> : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/telegram">
+        {isAuthenticated ? <TelegramSettings /> : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/my-orders">
+        {isAuthenticated ? <MyOrders /> : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/my-deliveries">
+        <MyDeliveries />
       </Route>
       
       <Route component={NotFound} />
