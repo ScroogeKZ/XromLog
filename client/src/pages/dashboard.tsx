@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { auth } from "@/lib/auth";
+import type { User } from "@/lib/auth";
 import { 
   Package, 
   Clock, 
@@ -36,7 +38,16 @@ export default function Dashboard() {
     page: 1,
     limit: 10
   });
+  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const currentUser = await auth.getCurrentUser();
+      setUser(currentUser);
+    };
+    loadUser();
+  }, []);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/stats'],
@@ -64,9 +75,11 @@ export default function Dashboard() {
     }));
   };
 
+  const isEmployee = user?.role === 'employee';
+  
   const statsCards = [
     {
-      title: "Всего заявок",
+      title: isEmployee ? "Мои заявки" : "Всего заявок",
       value: (stats as any)?.total || 0,
       icon: Package,
       color: "text-blue-600",
@@ -97,6 +110,30 @@ export default function Dashboard() {
 
   return (
     <Layout>
+      {/* Header with personalized greeting */}
+      {user && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Добро пожаловать, {user.username}!
+            </h1>
+            <p className="text-gray-600">
+              {isEmployee 
+                ? "Здесь отображается статистика по вашим заявкам на доставку." 
+                : "Обзор всех операций логистической системы ХРОМ-KZ."
+              }
+            </p>
+            {isEmployee && (
+              <div className="mt-3">
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  Роль: Сотрудник
+                </Badge>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statsCards.map((card) => (

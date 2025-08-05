@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "wouter";
 import { UserPlus, Eye, EyeOff, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
@@ -20,28 +20,30 @@ export default function Register() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    confirmPassword: "",
-    role: "employee" as "employee" | "manager"
+    confirmPassword: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const registerMutation = useMutation({
-    mutationFn: async (data: { username: string; password: string; role: string }) => {
+    mutationFn: async (data: { username: string; password: string }) => {
       const response = await apiRequest("POST", "/api/auth/register", data);
       return response.json();
     },
     onSuccess: async (data) => {
-      // Automatically log in the user after registration
-      auth.setToken(data.token);
+      // Store token in localStorage directly 
+      localStorage.setItem('auth_token', data.token);
       
       toast({
         title: "Регистрация успешна",
-        description: `Добро пожаловать в систему, ${data.user.username}!`
+        description: `Добро пожаловать в систему, ${data.user.username}! Роль: ${data.user.role}`
       });
       
-      setLocation("/dashboard");
+      // Redirect to dashboard
+      setTimeout(() => {
+        setLocation("/dashboard");
+      }, 1000);
     },
     onError: (error: any) => {
       const errorMessage = error.message || "Ошибка регистрации";
@@ -73,9 +75,7 @@ export default function Register() {
       newErrors.push("Пароли не совпадают");
     }
 
-    if (!formData.role) {
-      newErrors.push("Выберите роль пользователя");
-    }
+
 
     setErrors(newErrors);
     return newErrors.length === 0;
@@ -90,8 +90,7 @@ export default function Register() {
 
     registerMutation.mutate({
       username: formData.username.trim(),
-      password: formData.password,
-      role: formData.role
+      password: formData.password
     });
   };
 
@@ -121,6 +120,12 @@ export default function Register() {
             <p className="text-gray-600 mt-2">
               Создание нового пользователя в системе ХРОМ-KZ
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+              <p className="text-sm text-blue-800">
+                <strong>Внимание:</strong> Роли назначаются администратором после регистрации.
+                По умолчанию новые пользователи получают роль "Сотрудник".
+              </p>
+            </div>
           </div>
         </div>
 
@@ -169,33 +174,7 @@ export default function Register() {
                 </p>
               </div>
 
-              {/* Role Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="role">Роль пользователя</Label>
-                <Select value={formData.role} onValueChange={(value) => handleInputChange("role", value)}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Выберите роль" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="employee">
-                      <div className="flex flex-col">
-                        <span className="font-medium">Сотрудник</span>
-                        <span className="text-xs text-muted-foreground">
-                          Создание и просмотр собственных заявок
-                        </span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="manager">
-                      <div className="flex flex-col">
-                        <span className="font-medium">Менеджер</span>
-                        <span className="text-xs text-muted-foreground">
-                          Полный доступ к системе управления
-                        </span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
 
               {/* Password */}
               <div className="space-y-2">

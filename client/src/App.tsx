@@ -23,7 +23,10 @@ import Calendar from "@/pages/calendar";
 import TelegramSettings from "@/pages/telegram-settings";
 import MyOrders from "@/pages/my-orders";
 import MyDeliveries from "@/pages/my-deliveries";
+import Analytics from "@/pages/analytics";
+import UserManagement from "@/pages/user-management";
 import NotFound from "@/pages/not-found";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 function Router() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -88,7 +91,11 @@ function Router() {
       </Route>
       
       <Route path="/requests">
-        {isAuthenticated ? <RequestsManagement /> : <Redirect to="/login" />}
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <RequestsManagement />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
       </Route>
       
       <Route path="/create-request">
@@ -96,7 +103,11 @@ function Router() {
       </Route>
       
       <Route path="/calendar">
-        {isAuthenticated ? <Calendar /> : <Redirect to="/login" />}
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <Calendar />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
       </Route>
       
       <Route path="/request/:id">
@@ -104,15 +115,43 @@ function Router() {
       </Route>
       
       <Route path="/transport">
-        {isAuthenticated ? <TransportManagement /> : <Redirect to="/login" />}
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <TransportManagement />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
       </Route>
       
       <Route path="/reports">
-        {isAuthenticated ? <Reports /> : <Redirect to="/login" />}
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <Reports />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
       </Route>
       
       <Route path="/telegram">
-        {isAuthenticated ? <TelegramSettings /> : <Redirect to="/login" />}
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <TelegramSettings />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/analytics">
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <Analytics />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
+      </Route>
+      
+      <Route path="/users">
+        {isAuthenticated ? (
+          <ProtectedRoute allowedRoles={["manager"]}>
+            <UserManagement />
+          </ProtectedRoute>
+        ) : <Redirect to="/login" />}
       </Route>
       
       <Route path="/my-orders">

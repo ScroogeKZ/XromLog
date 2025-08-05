@@ -77,8 +77,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       
       const user = await storage.createUser({
-        ...userData,
-        password: hashedPassword
+        username: userData.username,
+        password: hashedPassword,
+        role: "employee" // Роли назначаются только администратором
       });
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
@@ -195,6 +196,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ? new Date(publicData.desiredShipmentDatetime) 
           : null,
         notes: publicData.notes || null,
+        clientName: publicData.clientName || null,
+        clientPhone: publicData.clientPhone || null,
+        clientEmail: publicData.clientEmail || null,
         createdByUserId: 1 // Default system user for public requests
       };
       
@@ -405,10 +409,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/stats", authenticateToken, async (req, res) => {
+  app.get("/api/stats", authenticateToken, async (req: any, res) => {
     try {
-      const stats = await storage.getShipmentRequestStats();
-      res.json(stats);
+      const user = req.user;
+      
+      if (user.role === 'employee') {
+        // For employees, get stats only for their requests
+        const userRequests = await storage.getShipmentRequestsByUserId(user.id);
+        const stats = {
+          total: userRequests.length,
+          processing: userRequests.filter(r => r.status === 'processing').length,
+          transit: userRequests.filter(r => r.status === 'transit').length,
+          delivered: userRequests.filter(r => r.status === 'delivered').length
+        };
+        res.json(stats);
+      } else {
+        // For managers, get all stats
+        const stats = await storage.getShipmentRequestStats();
+        res.json(stats);
+      }
     } catch (error) {
       console.error("Get stats error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -446,6 +465,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Telegram test error:", error);
       res.status(500).json({ message: "Ошибка тестирования Telegram" });
+    }
+  });
+
+  // Analytics endpoint for dashboard
+  app.get("/api/analytics", authenticateToken, async (req, res) => {
+    try {
+      const analyticsData = await storage.getAnalyticsData();
+      res.json(analyticsData);
+    } catch (error) {
+      console.error("Get analytics error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // User management endpoints
+  app.get("/api/users", authenticateToken, async (req: any, res) => {
+    try {
+      const user = req.user;
+      
+      // Only managers can access user list
+      if (user.role !== 'manager') {
+        return res.status(403).json({ message: "Access denied. Manager role required." });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Get users error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/users/:id/role", authenticateToken, async (req: any, res) => {
+    try {
+      const user = req.user;
+      const userId = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      // Only managers can update user roles
+      if (user.role !== 'manager') {
+        return res.status(403).json({ message: "Access denied. Manager role required." });
+      }
+      
+      // Validate role
+      if (!['employee', 'manager'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role. Must be 'employee' or 'manager'" });
+      }
+      
+      // Prevent self role change
+      if (user.id === userId) {
+        return res.status(400).json({ message: "Cannot change your own role" });
+      }
+      
+      const success = await storage.updateUserRole(userId, role);
+      
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ message: "User role updated successfully" });
+    } catch (error) {
+      console.error("Update user role error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

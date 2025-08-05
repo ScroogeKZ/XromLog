@@ -61,7 +61,7 @@ export const shipmentRequestRelations = relations(shipmentRequests, ({ one }) =>
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
-  role: true,
+  // role удалено - назначается автоматически администратором
 });
 
 export const insertShipmentRequestSchema = createInsertSchema(shipmentRequests).omit({

@@ -13,7 +13,8 @@ import {
   List,
   Calendar,
   MessageCircle,
-  Package
+  Package,
+  Users
 } from "lucide-react";
 import logoPath from "@assets/1571623_1754368340277.png";
 import { cn } from "@/lib/utils";
@@ -98,6 +99,20 @@ export function Layout({ children }: LayoutProps) {
         roles: ["manager"]
       },
       {
+        name: "Аналитика",
+        href: "/analytics", 
+        icon: BarChart3,
+        current: location === "/analytics",
+        roles: ["manager"]
+      },
+      {
+        name: "Пользователи",
+        href: "/users",
+        icon: Users,
+        current: location === "/users",
+        roles: ["manager"]
+      },
+      {
         name: "Telegram",
         href: "/telegram",
         icon: MessageCircle,
@@ -133,6 +148,10 @@ export function Layout({ children }: LayoutProps) {
         return "Отчеты и аналитика";
       case "/telegram":
         return "Настройки Telegram";
+      case "/analytics":
+        return "Аналитика и KPI";
+      case "/users":
+        return "Управление пользователями";
       default:
         if (location.startsWith("/request/")) {
           return "Детали заявки";

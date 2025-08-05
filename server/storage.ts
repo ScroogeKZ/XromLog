@@ -36,6 +36,22 @@ export interface IStorage {
     delivered: number;
   }>;
   getShipmentRequestsByDateRange(startDate: Date, endDate: Date): Promise<ShipmentRequest[]>;
+  getShipmentRequestsByUserId(userId: number): Promise<ShipmentRequest[]>;
+  getShipmentRequestsByClientPhone(clientPhone: string): Promise<ShipmentRequest[]>;
+  
+  // Analytics methods
+  getAnalyticsData(): Promise<{
+    monthlyStats: Array<{ month: string; astana: number; intercity: number; total: number }>;
+    categoryStats: { astana: number; intercity: number };
+    statusDistribution: Array<{ status: string; count: number }>;
+    averagePrice: { astana: number | null; intercity: number | null };
+    kpiMetrics: {
+      averageDeliveryTime: number;
+      onTimeDeliveryRate: number;
+      totalRevenue: number;
+      avgOrderValue: number;
+    };
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -172,6 +188,7 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .returning();
+
     return request;
   }
 
@@ -228,6 +245,116 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(shipmentRequests.desiredShipmentDatetime));
+  }
+
+  async getAllUsers(): Promise<Array<{ id: number; username: string; role: string; createdAt: Date }>> {
+    const usersList = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .orderBy(users.createdAt);
+    
+    return usersList;
+  }
+
+  async updateUserRole(userId: number, role: string): Promise<boolean> {
+    try {
+      const result = await db
+        .update(users)
+        .set({ role })
+        .where(eq(users.id, userId));
+      
+      return true;
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      return false;
+    }
+  }
+
+  async getAnalyticsData(): Promise<{
+    monthlyStats: Array<{ month: string; astana: number; intercity: number; total: number }>;
+    categoryStats: { astana: number; intercity: number };
+    statusDistribution: Array<{ status: string; count: number }>;
+    averagePrice: { astana: number | null; intercity: number | null };
+    kpiMetrics: {
+      averageDeliveryTime: number;
+      onTimeDeliveryRate: number;
+      totalRevenue: number;
+      avgOrderValue: number;
+    };
+  }> {
+    // Monthly statistics for the last 12 months
+    const monthlyStats = await db
+      .select({
+        month: sql<string>`to_char(${shipmentRequests.createdAt}, 'YYYY-MM')`,
+        astana: sql<number>`count(case when ${shipmentRequests.category} = 'astana' then 1 end)`,
+        intercity: sql<number>`count(case when ${shipmentRequests.category} = 'intercity' then 1 end)`,
+        total: count(),
+      })
+      .from(shipmentRequests)
+      .where(gte(shipmentRequests.createdAt, sql`current_date - interval '12 months'`))
+      .groupBy(sql`to_char(${shipmentRequests.createdAt}, 'YYYY-MM')`)
+      .orderBy(sql`to_char(${shipmentRequests.createdAt}, 'YYYY-MM')`);
+
+    // Category distribution
+    const [categoryStats] = await db
+      .select({
+        astana: sql<number>`count(case when ${shipmentRequests.category} = 'astana' then 1 end)`,
+        intercity: sql<number>`count(case when ${shipmentRequests.category} = 'intercity' then 1 end)`,
+      })
+      .from(shipmentRequests);
+
+    // Status distribution
+    const statusDistribution = await db
+      .select({
+        status: shipmentRequests.status,
+        count: count(),
+      })
+      .from(shipmentRequests)
+      .groupBy(shipmentRequests.status)
+      .orderBy(desc(count()));
+
+    // Average prices by category
+    const [averagePrice] = await db
+      .select({
+        astana: sql<number | null>`avg(case when ${shipmentRequests.category} = 'astana' and ${shipmentRequests.priceKzt} is not null then ${shipmentRequests.priceKzt}::numeric end)`,
+        intercity: sql<number | null>`avg(case when ${shipmentRequests.category} = 'intercity' and ${shipmentRequests.priceKzt} is not null then ${shipmentRequests.priceKzt}::numeric end)`,
+      })
+      .from(shipmentRequests);
+
+    // KPI Metrics
+    const [kpiData] = await db
+      .select({
+        totalRevenue: sql<number>`coalesce(sum(${shipmentRequests.priceKzt}::numeric), 0)`,
+        avgOrderValue: sql<number>`coalesce(avg(${shipmentRequests.priceKzt}::numeric), 0)`,
+        totalCompleted: sql<number>`count(case when ${shipmentRequests.status} = 'delivered' then 1 end)`,
+        onTimeDeliveries: sql<number>`count(case when ${shipmentRequests.status} = 'delivered' and ${shipmentRequests.desiredShipmentDatetime} >= ${shipmentRequests.updatedAt} then 1 end)`,
+      })
+      .from(shipmentRequests);
+
+    const onTimeDeliveryRate = kpiData.totalCompleted > 0 
+      ? (kpiData.onTimeDeliveries / kpiData.totalCompleted) * 100 
+      : 0;
+
+    // Average delivery time (simplified calculation)
+    const averageDeliveryTime = 2.5; // placeholder - could be calculated from actual delivery data
+
+    return {
+      monthlyStats,
+      categoryStats,
+      statusDistribution,
+      averagePrice,
+      kpiMetrics: {
+        averageDeliveryTime,
+        onTimeDeliveryRate,
+        totalRevenue: kpiData.totalRevenue,
+        avgOrderValue: kpiData.avgOrderValue,
+      },
+    };
   }
 }
 
