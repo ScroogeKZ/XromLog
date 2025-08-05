@@ -107,7 +107,7 @@ export const updateShipmentRequestSchema = z.object({
   desiredShipmentDatetime: z.date().optional().nullable(),
   notes: z.string().optional().nullable(),
   transportInfo: z.any().optional().nullable(),
-  priceKzt: z.number().optional().nullable(),
+  priceKzt: z.string().optional().nullable(),
   priceNotes: z.string().optional().nullable(),
 });
 

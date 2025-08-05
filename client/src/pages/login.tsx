@@ -47,31 +47,35 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-muted flex items-center justify-center py-6 px-3 sm:py-12 sm:px-4 lg:px-8">
+      <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div className="text-center">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary via-primary to-secondary rounded-2xl flex items-center justify-center shadow-2xl hover:scale-105 transition-transform duration-300">
-            <Truck className="w-10 h-10 text-white" />
+          <div className="mx-auto w-24 h-16 sm:w-32 sm:h-20 bg-white border border-gray-200 rounded-lg flex items-center justify-center card-shadow-lg p-2 sm:p-3">
+            <img 
+              src="/attached_assets/1571623_1754335361197.png" 
+              alt="ХРОМ-KZ" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h2 className="mt-8 text-4xl font-bold text-foreground">
-            Хром Логистика
+          <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-bold text-foreground">
+            ХРОМ-KZ
           </h2>
-          <p className="mt-3 text-base text-muted-foreground">
-            Корпоративная система управления логистикой
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-muted-foreground">
+            Система управления логистикой
           </p>
         </div>
 
-        <Card className="glass-card card-shadow-lg hover-lift">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Вход в систему</CardTitle>
-            <CardDescription className="text-base">
-              Введите корпоративные учетные данные для доступа
+        <Card className="professional-card card-shadow-lg">
+          <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl font-semibold">Вход в систему</CardTitle>
+            <CardDescription className="text-xs sm:text-sm mt-1">
+              Введите учетные данные для доступа
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="username">Имя пользователя</Label>
+          <CardContent className="px-4 sm:px-6">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+              <div className="space-y-1 sm:space-y-2">
+                <Label htmlFor="username" className="text-xs sm:text-sm font-medium">Имя пользователя</Label>
                 <Input
                   id="username"
                   name="username"
@@ -80,10 +84,11 @@ export default function Login() {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Введите имя пользователя"
+                  className="h-9 sm:h-10 text-sm"
                 />
               </div>
-              <div>
-                <Label htmlFor="password">Пароль</Label>
+              <div className="space-y-1 sm:space-y-2">
+                <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Пароль</Label>
                 <Input
                   id="password"
                   name="password"
@@ -92,11 +97,12 @@ export default function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Введите пароль"
+                  className="h-9 sm:h-10 text-sm"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-semibold py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm py-2"
                 disabled={isLoading}
               >
                 {isLoading ? (
