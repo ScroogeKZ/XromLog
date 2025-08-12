@@ -1,285 +1,214 @@
 <?php
-require_once 'includes/layout.php';
+session_start();
 
-ob_start();
-?>
-
-<div class="container" style="padding: 2rem 0;">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Администрирование</h2>
-            <p>Управление системой и пользователями</p>
-        </div>
-        
-        <div class="grid grid-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Управление пользователями</h3>
-                </div>
-                
-                <div id="usersList">
-                    <p>Загрузка пользователей...</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Все заявки</h3>
-                </div>
-                
-                <div id="allRequestsList">
-                    <p>Загрузка заявок...</p>
-                </div>
-                
-                <div style="margin-top: 1rem;">
-                    <button onclick="loadAllRequests()" class="btn btn-secondary">Обновить список</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для редактирования заявки -->
-<div id="editRequestModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 0.5rem; max-width: 500px; width: 90%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h3 id="editRequestTitle">Редактировать заявку</h3>
-            <button onclick="hideEditRequestModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-        </div>
-        
-        <form id="editRequestForm">
-            <input type="hidden" name="id" id="editRequestId">
-            
-            <div class="form-group">
-                <label class="form-label">Статус</label>
-                <select name="status" class="form-select" id="editRequestStatus">
-                    <option value="new">Новая</option>
-                    <option value="processing">В обработке</option>
-                    <option value="assigned">Назначена</option>
-                    <option value="in_transit">В пути</option>
-                    <option value="delivered">Доставлена</option>
-                    <option value="cancelled">Отменена</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Стоимость (тенге)</label>
-                <input type="number" name="priceKzt" step="0.01" class="form-input" id="editRequestPrice">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Примечание к стоимости</label>
-                <textarea name="priceNotes" class="form-textarea" id="editRequestNotes" rows="3"></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                <button type="button" onclick="hideEditRequestModal()" class="btn btn-secondary">Отмена</button>
-                <button type="submit" class="btn btn-primary">Сохранить</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-let currentEditingRequestId = null;
-
-async function loadUsers() {
-    try {
-        const response = await fetch('/api/users');
-        const result = await response.json();
-        
-        if (response.ok && result.data) {
-            displayUsers(result.data);
-        } else {
-            document.getElementById('usersList').innerHTML = '<p>Ошибка загрузки пользователей</p>';
-        }
-    } catch (error) {
-        document.getElementById('usersList').innerHTML = '<p>Ошибка сети</p>';
+// Автозагрузка классов
+spl_autoload_register(function ($class) {
+    $class = str_replace('App\\', '', $class);
+    $file = __DIR__ . '/../classes/' . $class . '.php';
+    if (file_exists($file)) {
+        require_once $file;
     }
-}
-
-function displayUsers(users) {
-    const container = document.getElementById('usersList');
-    
-    if (users.length === 0) {
-        container.innerHTML = '<p>Нет пользователей</p>';
-        return;
-    }
-    
-    const html = `
-        <table class="table" style="font-size: 0.875rem;">
-            <thead>
-                <tr>
-                    <th>Пользователь</th>
-                    <th>Email</th>
-                    <th>Роль</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${users.map(user => `
-                    <tr>
-                        <td>
-                            <strong>${user.firstName} ${user.lastName}</strong><br>
-                            <small style="color: var(--text-secondary);">${user.username}</small>
-                        </td>
-                        <td>${user.email}</td>
-                        <td>
-                            <select onchange="updateUserRole(${user.id}, this.value)" class="form-select" style="padding: 0.25rem;">
-                                <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>Сотрудник</option>
-                                <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Менеджер</option>
-                            </select>
-                        </td>
-                        <td>
-                            <small style="color: var(--text-secondary);">
-                                ${new Date(user.createdAt).toLocaleDateString('ru-RU')}
-                            </small>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-    
-    container.innerHTML = html;
-}
-
-async function updateUserRole(userId, newRole) {
-    try {
-        const response = await fetch('/api/users', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: userId, role: newRole })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            alert('Роль пользователя обновлена!');
-        } else {
-            alert(result.error || 'Ошибка обновления роли');
-            loadUsers(); // Перезагружаем список для отката изменений
-        }
-    } catch (error) {
-        alert('Ошибка сети');
-        loadUsers();
-    }
-}
-
-async function loadAllRequests() {
-    try {
-        const response = await fetch('/api/shipment-requests');
-        const result = await response.json();
-        
-        if (response.ok && result.data) {
-            displayAllRequests(result.data);
-        } else {
-            document.getElementById('allRequestsList').innerHTML = '<p>Ошибка загрузки заявок</p>';
-        }
-    } catch (error) {
-        document.getElementById('allRequestsList').innerHTML = '<p>Ошибка сети</p>';
-    }
-}
-
-function displayAllRequests(requests) {
-    const container = document.getElementById('allRequestsList');
-    
-    if (requests.length === 0) {
-        container.innerHTML = '<p>Нет заявок</p>';
-        return;
-    }
-    
-    const html = `
-        <div style="max-height: 400px; overflow-y: auto;">
-            ${requests.slice(0, 10).map(request => `
-                <div style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; margin-bottom: 0.5rem;">
-                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
-                        <strong>${request.requestNumber}</strong>
-                        <span class="status-badge status-${request.status}" style="margin-left: auto; margin-right: 1rem;">${getStatusName(request.status)}</span>
-                        <button onclick="editRequest(${request.id}, '${request.requestNumber}', '${request.status}', ${request.priceKzt || 'null'}, '${(request.priceNotes || '').replace(/'/g, "\\'")}')" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Редактировать</button>
-                    </div>
-                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                        <p><strong>Тип:</strong> ${request.type === 'local' ? 'Местная' : 'Междугородняя'}</p>
-                        <p><strong>Маршрут:</strong> ${request.senderName} → ${request.recipientName}</p>
-                        <p><strong>Груз:</strong> ${request.cargoDescription} (${request.cargoWeight} кг)</p>
-                        ${request.priceKzt ? `<p><strong>Стоимость:</strong> ${request.priceKzt.toLocaleString()} ₸</p>` : ''}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-        ${requests.length > 10 ? `<p style="text-align: center; color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem;">Показано первые 10 из ${requests.length} заявок</p>` : ''}
-    `;
-    
-    container.innerHTML = html;
-}
-
-function editRequest(id, requestNumber, status, priceKzt, priceNotes) {
-    document.getElementById('editRequestId').value = id;
-    document.getElementById('editRequestTitle').textContent = `Редактировать заявку ${requestNumber}`;
-    document.getElementById('editRequestStatus').value = status;
-    document.getElementById('editRequestPrice').value = priceKzt || '';
-    document.getElementById('editRequestNotes').value = priceNotes || '';
-    
-    document.getElementById('editRequestModal').style.display = 'block';
-}
-
-function hideEditRequestModal() {
-    document.getElementById('editRequestModal').style.display = 'none';
-    document.getElementById('editRequestForm').reset();
-}
-
-function getStatusName(status) {
-    const names = {
-        'new': 'Новая',
-        'processing': 'В обработке',
-        'assigned': 'Назначена',
-        'in_transit': 'В пути',
-        'delivered': 'Доставлена',
-        'cancelled': 'Отменена'
-    };
-    return names[status] || status;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadUsers();
-    loadAllRequests();
-    
-    document.getElementById('editRequestForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        
-        // Преобразуем пустые значения
-        if (data.priceKzt === '') {
-            data.priceKzt = null;
-        } else {
-            data.priceKzt = parseFloat(data.priceKzt);
-        }
-        
-        try {
-            const response = await fetch('/api/shipment-requests', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.json();
-            
-            if (response.ok) {
-                alert('Заявка обновлена!');
-                hideEditRequestModal();
-                loadAllRequests();
-            } else {
-                alert(result.error || 'Ошибка обновления заявки');
-            }
-        } catch (error) {
-            alert('Ошибка сети');
-        }
-    });
 });
-</script>
 
-<?php
-$content = ob_get_clean();
-renderLayout('Администрирование', $content, true, 'manager');
+require_once '../config/database.php';
+
+$auth = new App\Auth();
+$auth->requireManager();
+
+$shipmentRequest = new App\ShipmentRequest();
+$userManager = new App\UserManager();
+
+// Получаем статистику
+$stats = $shipmentRequest->getStats();
+$userStats = $userManager->getUserStats();
+
+// Получаем последние заявки
+$filters = [
+    'limit' => 10
+];
+$recentRequests = $shipmentRequest->getAll($filters);
+
+$currentUser = $auth->getCurrentUser();
 ?>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Административная панель - ХРОМ-KZ Логистика</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="../assets/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Навигация -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img class="h-8 w-auto" src="../attached_assets/1571623_1754335361197.png" alt="ХРОМ-KZ">
+                    <span class="ml-3 text-xl font-bold text-chrome-blue">ХРОМ-KZ</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        Добро пожаловать, <strong><?= htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) ?></strong>
+                    </span>
+                    <a href="/pages/logout.php" class="btn-outline text-sm">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Заголовок -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Административная панель</h1>
+            <p class="text-gray-600">Управление системой логистики</p>
+        </div>
+
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-500 text-white rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-bold text-gray-900"><?= $stats['total'] ?></p>
+                        <p class="text-gray-600">Всего заявок</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-bold text-gray-900"><?= $stats['delivered'] ?></p>
+                        <p class="text-gray-600">Доставлено</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-yellow-500 text-white rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-bold text-gray-900"><?= $stats['in_transit'] ?></p>
+                        <p class="text-gray-600">В пути</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-500 text-white rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-bold text-gray-900"><?= $userStats['total'] ?></p>
+                        <p class="text-gray-600">Пользователей</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Быстрые действия -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <a href="/pages/requests.php" class="glass-card p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Управление заявками</h3>
+                <p class="text-gray-600">Просмотр, редактирование и обработка всех заявок на доставку</p>
+            </a>
+
+            <a href="/pages/users.php" class="glass-card p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Управление пользователями</h3>
+                <p class="text-gray-600">Управление учетными записями сотрудников и администраторов</p>
+            </a>
+
+            <a href="/pages/analytics.php" class="glass-card p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Аналитика и отчеты</h3>
+                <p class="text-gray-600">Статистика работы и детальные отчеты по доставкам</p>
+            </a>
+        </div>
+
+        <!-- Последние заявки -->
+        <div class="glass-card">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">Последние заявки</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Номер</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Тип</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Отправитель</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата создания</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php if (empty($recentRequests)): ?>
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">Заявок пока нет</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($recentRequests as $request): ?>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-chrome-blue">
+                                        <?= htmlspecialchars($request['request_number']) ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <?= $request['type'] === 'local' ? 'Местная' : 'Междугородняя' ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <?= htmlspecialchars($request['sender_name']) ?>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <?php
+                                        $statusClasses = [
+                                            'new' => 'bg-gray-100 text-gray-800',
+                                            'processing' => 'bg-blue-100 text-blue-800',
+                                            'assigned' => 'bg-yellow-100 text-yellow-800',
+                                            'in_transit' => 'bg-purple-100 text-purple-800',
+                                            'delivered' => 'bg-green-100 text-green-800',
+                                            'cancelled' => 'bg-red-100 text-red-800'
+                                        ];
+                                        $statusNames = [
+                                            'new' => 'Новая',
+                                            'processing' => 'Обработка',
+                                            'assigned' => 'Назначена',
+                                            'in_transit' => 'В пути',
+                                            'delivered' => 'Доставлена',
+                                            'cancelled' => 'Отменена'
+                                        ];
+                                        ?>
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?= $statusClasses[$request['status']] ?>">
+                                            <?= $statusNames[$request['status']] ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <?= date('d.m.Y H:i', strtotime($request['created_at'])) ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

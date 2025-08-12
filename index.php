@@ -73,7 +73,7 @@ switch ($request_uri) {
         require_once 'pages/requests.php';
         break;
     case '/admin':
-        requireAuth('manager');
+        requireManager();
         require_once 'pages/admin.php';
         break;
     case '/profile':
@@ -81,7 +81,7 @@ switch ($request_uri) {
         require_once 'pages/profile.php';
         break;
     case '/analytics':
-        requireAuth('manager');
+        requireManager();
         require_once 'pages/analytics.php';
         break;
     case '/track':

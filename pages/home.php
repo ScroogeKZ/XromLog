@@ -1,7 +1,8 @@
 <?php
 require_once 'includes/layout.php';
+require_once 'includes/auth.php';
 
-ob_start();
+startOutput();
 ?>
 
 <section class="hero">
