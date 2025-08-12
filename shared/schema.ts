@@ -7,6 +7,7 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: varchar("username", { length: 255 }).notNull().unique(),
+  email: varchar("email", { length: 100 }).notNull().unique(),
   password: text("password").notNull(),
   role: varchar("role", { length: 50 }).notNull().default("employee"), // "employee" or "manager"
   firstName: varchar("first_name", { length: 255 }),
@@ -15,41 +16,44 @@ export const users = pgTable("users", {
   age: integer("age"),
   phone: varchar("phone", { length: 20 }),
   createdAt: timestamp("created_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const shipmentRequests = pgTable("shipment_requests", {
   id: serial("id").primaryKey(),
   requestNumber: varchar("request_number", { length: 255 }).notNull().unique(),
-  category: varchar("category", { length: 50 }).notNull(), // "astana" or "intercity"
-  status: varchar("status", { length: 50 }).notNull().default("new"), // "new", "processing", "assigned", "transit", "delivered", "cancelled"
-  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp("updated_at", { withTimezone: true }),
-  createdByUserId: integer("created_by_user_id").references(() => users.id),
-  cargoName: varchar("cargo_name", { length: 255 }).notNull(),
-  cargoWeightKg: decimal("cargo_weight_kg", { precision: 10, scale: 2 }),
-  cargoVolumeM3: decimal("cargo_volume_m3", { precision: 10, scale: 2 }),
-  cargoDimensions: varchar("cargo_dimensions", { length: 255 }),
-
-  specialRequirements: text("special_requirements"),
-  loadingCity: varchar("loading_city", { length: 255 }), // For intercity shipments
-  loadingAddress: text("loading_address").notNull(),
-  loadingContactPerson: varchar("loading_contact_person", { length: 255 }),
-  loadingContactPhone: varchar("loading_contact_phone", { length: 20 }),
-  unloadingCity: varchar("unloading_city", { length: 255 }), // For intercity shipments
-  unloadingAddress: text("unloading_address").notNull(),
-  unloadingContactPerson: varchar("unloading_contact_person", { length: 255 }),
-  unloadingContactPhone: varchar("unloading_contact_phone", { length: 20 }),
-  desiredShipmentDatetime: timestamp("desired_shipment_datetime", { withTimezone: true }),
-  notes: text("notes"),
-  cargoPhotos: text("cargo_photos").array(), // Array of image URLs/paths
-  transportInfo: jsonb("transport_info"), // { "driver_name": "...", "driver_phone": "...", "vehicle_model": "...", "vehicle_plate": "..." }
-  priceKzt: decimal("price_kzt", { precision: 10, scale: 2 }), // Price in KZT
-  priceNotes: text("price_notes"), // Additional pricing notes
+  type: varchar("type", { length: 50 }).notNull(), // "local" or "intercity"
+  status: varchar("status", { length: 50 }).notNull().default("new"), // "new", "processing", "assigned", "in_transit", "delivered", "cancelled"
+  userId: integer("user_id").references(() => users.id),
   
-  // Client contact fields for public tracking
-  clientName: text("client_name"),
-  clientPhone: text("client_phone"),
-  clientEmail: text("client_email")
+  // Sender information
+  senderName: varchar("sender_name", { length: 100 }).notNull(),
+  senderPhone: varchar("sender_phone", { length: 20 }).notNull(),
+  senderAddress: text("sender_address").notNull(),
+  
+  // Recipient information
+  recipientName: varchar("recipient_name", { length: 100 }).notNull(),
+  recipientPhone: varchar("recipient_phone", { length: 20 }).notNull(),
+  recipientAddress: text("recipient_address").notNull(),
+  
+  // Cargo information
+  cargoDescription: text("cargo_description").notNull(),
+  cargoWeight: decimal("cargo_weight", { precision: 10, scale: 2 }).notNull(),
+  cargoVolume: decimal("cargo_volume", { precision: 10, scale: 3 }).default('0'),
+  cargoLength: decimal("cargo_length", { precision: 10, scale: 2 }).default('0'),
+  cargoWidth: decimal("cargo_width", { precision: 10, scale: 2 }).default('0'),
+  cargoHeight: decimal("cargo_height", { precision: 10, scale: 2 }).default('0'),
+  cargoPhotos: jsonb("cargo_photos").default('[]'),
+  
+  // Pricing
+  priceKzt: decimal("price_kzt", { precision: 12, scale: 2 }),
+  priceNotes: text("price_notes"),
+  
+  // Transport assignment
+  transport: jsonb("transport"),
+  
+  createdAt: timestamp("created_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -57,16 +61,26 @@ export const userRelations = relations(users, ({ many }) => ({
 }));
 
 export const shipmentRequestRelations = relations(shipmentRequests, ({ one }) => ({
-  createdBy: one(users, {
-    fields: [shipmentRequests.createdByUserId],
+  user: one(users, {
+    fields: [shipmentRequests.userId],
     references: [users.id],
   }),
 }));
 
-export const insertUserSchema = createInsertSchema(users).pick({
+export const insertUserSchema = createInsertSchema(users).extend({
+  email: z.string().email("Неверный формат email"),
+  password: z.string().min(6, "Пароль должен быть не менее 6 символов"),
+  firstName: z.string().min(1, "Имя обязательно"),
+  lastName: z.string().min(1, "Фамилия обязательна"),
+}).pick({
   username: true,
+  email: true,
   password: true,
-  // role удалено - назначается автоматически администратором
+  firstName: true,
+  lastName: true,
+  position: true,
+  age: true,
+  phone: true,
 });
 
 // Profile update schema for users
@@ -92,57 +106,54 @@ export const changePasswordSchema = z.object({
 
 export type ChangePassword = z.infer<typeof changePasswordSchema>;
 
-export const insertShipmentRequestSchema = createInsertSchema(shipmentRequests).omit({
-  id: true,
-  requestNumber: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertShipmentRequestSchema = createInsertSchema(shipmentRequests)
+  .omit({
+    id: true,
+    requestNumber: true,
+    createdAt: true,
+    updatedAt: true,
+    status: true,
+    priceKzt: true,
+    priceNotes: true,
+    transport: true,
+    cargoPhotos: true,
+    userId: true
+  })
+  .extend({
+    type: z.enum(["local", "intercity"], {
+      errorMap: () => ({ message: "Выберите тип доставки" })
+    }),
+    cargoDescription: z.string().min(1, "Описание груза обязательно"),
+    cargoWeight: z.coerce.number().min(0.1, "Вес груза должен быть больше 0"),
+    senderName: z.string().min(1, "Имя отправителя обязательно"),
+    senderPhone: z.string().min(10, "Номер телефона отправителя обязателен"),
+    senderAddress: z.string().min(1, "Адрес отправителя обязателен"),
+    recipientName: z.string().min(1, "Имя получателя обязательно"),
+    recipientPhone: z.string().min(10, "Номер телефона получателя обязателен"),
+    recipientAddress: z.string().min(1, "Адрес получателя обязателен"),
+  });
 
-// Public schema for frontend forms - accepts both strings and numbers for decimal fields
-export const publicInsertShipmentRequestSchema = z.object({
-  category: z.string(),
-  cargoName: z.string().min(1, "Наименование груза обязательно"),
-  cargoWeightKg: z.union([z.string(), z.number()]).optional().nullable(),
-  cargoVolumeM3: z.union([z.string(), z.number()]).optional().nullable(),
-  cargoDimensions: z.string().optional().nullable(),
-  specialRequirements: z.string().optional().nullable(),
-  loadingCity: z.string().optional().nullable(),
-  loadingAddress: z.string().min(1, "Адрес загрузки обязателен"),
-  loadingContactPerson: z.string().optional().nullable(),
-  loadingContactPhone: z.string().optional().nullable(),
-  unloadingCity: z.string().optional().nullable(),
-  unloadingAddress: z.string().min(1, "Адрес выгрузки обязателен"),
-  unloadingContactPerson: z.string().optional().nullable(),
-  unloadingContactPhone: z.string().optional().nullable(),
-  desiredShipmentDatetime: z.string().optional().nullable(),
-  notes: z.string().optional().nullable(),
-  cargoPhotos: z.array(z.string()).optional().nullable(),
-  // Client contact fields for public requests
-  clientName: z.string().optional().nullable(),
-  clientPhone: z.string().min(1, "Номер телефона обязателен"),
-  clientEmail: z.string().optional().nullable(),
-});
+// Public schema for public requests (same structure)
+export const publicInsertShipmentRequestSchema = insertShipmentRequestSchema;
 
 export const updateShipmentRequestSchema = z.object({
+  id: z.number(),
   status: z.string().optional(),
-  cargoName: z.string().optional(),
-  cargoWeightKg: z.union([z.string(), z.number()]).optional().nullable(),
-  cargoVolumeM3: z.union([z.string(), z.number()]).optional().nullable(),
-  cargoDimensions: z.string().optional().nullable(),
-  specialRequirements: z.string().optional().nullable(),
-  loadingCity: z.string().optional().nullable(),
-  loadingAddress: z.string().optional(),
-  loadingContactPerson: z.string().optional().nullable(),
-  loadingContactPhone: z.string().optional().nullable(),
-  unloadingCity: z.string().optional().nullable(),
-  unloadingAddress: z.string().optional(),
-  unloadingContactPerson: z.string().optional().nullable(),
-  unloadingContactPhone: z.string().optional().nullable(),
-  desiredShipmentDatetime: z.union([z.date(), z.string()]).optional().nullable(),
-  notes: z.string().optional().nullable(),
+  type: z.string().optional(),
+  senderName: z.string().optional(),
+  senderPhone: z.string().optional(),
+  senderAddress: z.string().optional(),
+  recipientName: z.string().optional(),
+  recipientPhone: z.string().optional(),
+  recipientAddress: z.string().optional(),
+  cargoDescription: z.string().optional(),
+  cargoWeight: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoVolume: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoLength: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoWidth: z.union([z.string(), z.number()]).optional().nullable(),
+  cargoHeight: z.union([z.string(), z.number()]).optional().nullable(),
   cargoPhotos: z.array(z.string()).optional().nullable(),
-  transportInfo: z.any().optional().nullable(),
+  transport: z.any().optional().nullable(),
   priceKzt: z.union([z.string(), z.number()]).optional().nullable(),
   priceNotes: z.string().optional().nullable(),
 });

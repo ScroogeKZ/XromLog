@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertShipmentRequestSchema, publicInsertShipmentRequestSchema, updateShipmentRequestSchema, insertUserSchema, updateUserProfileSchema, changePasswordSchema } from "@shared/schema";
+import { updateShipmentRequestSchema, insertUserSchema, updateUserProfileSchema, changePasswordSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
@@ -231,43 +231,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public POST endpoint for creating shipment requests (no authentication required)
   app.post("/api/shipment-requests/public", async (req, res) => {
     try {
-      // Use the public schema for validation
-      const publicData = publicInsertShipmentRequestSchema.parse(req.body);
+      console.log('Received body:', req.body);
       
-      // Check if user exists with this phone number
-      let createdByUserId = 1; // Default system user for public requests
-      if (publicData.clientPhone) {
-        const existingUser = await storage.getUserByPhone(publicData.clientPhone);
+      // Validate required fields manually since old schema is still being used somewhere
+      const requiredFields = ['type', 'senderName', 'senderPhone', 'senderAddress', 'recipientName', 'recipientPhone', 'recipientAddress', 'cargoDescription', 'cargoWeight'];
+      const missingFields = requiredFields.filter(field => !req.body[field]);
+      
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          message: "Ошибка валидации",
+          errors: missingFields.map(field => ({
+            field,
+            message: "Поле обязательно для заполнения"
+          }))
+        });
+      }
+      
+      const publicData = req.body;
+      
+      // Check if user exists with this phone number for linking
+      let userId = null;
+      if (publicData.senderPhone) {
+        const existingUser = await storage.getUserByPhone(publicData.senderPhone);
         if (existingUser) {
-          createdByUserId = existingUser.id;
+          userId = existingUser.id;
           console.log(`✓ Заявка автоматически связана с пользователем: ${existingUser.firstName} ${existingUser.lastName} (ID: ${existingUser.id})`);
         }
       }
       
+      // Generate request number based on type
+      const year = new Date().getFullYear();
+      const prefix = publicData.type === 'local' ? 'AST' : 'INT';
+      
+      // Get next number for this type and year
+      const existingRequests = await storage.getShipmentRequests({});
+      const thisYearRequests = existingRequests.requests.filter(r => 
+        r.requestNumber.startsWith(`${prefix}-${year}`)
+      );
+      const nextNumber = (thisYearRequests.length + 1).toString().padStart(3, '0');
+      const requestNumber = `${prefix}-${year}-${nextNumber}`;
+      
       // Transform the data for storage
       const requestData = {
-        category: publicData.category,
-        cargoName: publicData.cargoName,
-        cargoWeightKg: publicData.cargoWeightKg && String(publicData.cargoWeightKg).trim() !== "" ? String(publicData.cargoWeightKg) : null,
-        cargoVolumeM3: publicData.cargoVolumeM3 && String(publicData.cargoVolumeM3).trim() !== "" ? String(publicData.cargoVolumeM3) : null,
-        cargoDimensions: publicData.cargoDimensions || null,
-        specialRequirements: publicData.specialRequirements || null,
-        loadingCity: publicData.loadingCity || null,
-        loadingAddress: publicData.loadingAddress,
-        loadingContactPerson: publicData.loadingContactPerson || null,
-        loadingContactPhone: publicData.loadingContactPhone || null,
-        unloadingCity: publicData.unloadingCity || null,
-        unloadingAddress: publicData.unloadingAddress,
-        unloadingContactPerson: publicData.unloadingContactPerson || null,
-        unloadingContactPhone: publicData.unloadingContactPhone || null,
-        desiredShipmentDatetime: publicData.desiredShipmentDatetime && publicData.desiredShipmentDatetime.trim() !== "" 
-          ? new Date(publicData.desiredShipmentDatetime) 
-          : null,
-        notes: publicData.notes || null,
-        clientName: publicData.clientName || null,
-        clientPhone: publicData.clientPhone || null,
-        clientEmail: publicData.clientEmail || null,
-        createdByUserId: createdByUserId
+        requestNumber,
+        type: publicData.type,
+        userId,
+        senderName: publicData.senderName,
+        senderPhone: publicData.senderPhone,
+        senderAddress: publicData.senderAddress,
+        recipientName: publicData.recipientName,
+        recipientPhone: publicData.recipientPhone,
+        recipientAddress: publicData.recipientAddress,
+        cargoDescription: publicData.cargoDescription,
+        cargoWeight: publicData.cargoWeight,
+        cargoVolume: publicData.cargoVolume || 0,
+        cargoLength: publicData.cargoLength || 0,
+        cargoWidth: publicData.cargoWidth || 0,
+        cargoHeight: publicData.cargoHeight || 0,
+        status: 'new'
       };
       
       const request = await storage.createShipmentRequest(requestData);
@@ -281,7 +302,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(201).json({
-        requestNumber: request.requestNumber,
+        data: {
+          requestNumber: request.requestNumber,
+          id: request.id
+        },
         message: "Заявка успешно создана"
       });
     } catch (error) {
@@ -289,6 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           message: "Ошибка валидации", 
+          error: "Проверьте правильность заполнения всех полей",
           errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message
