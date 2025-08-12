@@ -47,13 +47,6 @@ Contact information: Phone +7 (702) 997 00 94, Email nurbek@creativegroup.kz
 ✓ Database connectivity confirmed with user authentication working
 ✓ Request management system fully operational with real-time updates
 ✓ Successfully migrated from Replit Agent environment to standard Replit environment (Aug 5, 2025)
-✓ Complete conversion from React/Node.js to pure PHP implementation completed (Jan 12, 2025)
-✓ PHP backend with PostgreSQL database fully operational with user authentication and shipment management (Jan 12, 2025)
-✓ All core functionality migrated: user login/logout, admin panel, shipment tracking, public request forms (Jan 12, 2025)
-✓ Database schema maintained with existing users (admin/password, employee/password) for testing (Jan 12, 2025)
-✓ Node.js completely removed - project is now pure PHP with no dependencies (Jan 12, 2025)
-✓ All React/TypeScript files deleted, custom CSS and assets recreated for PHP version (Jan 12, 2025)
-✓ Clean project structure with only PHP classes, pages, config, and assets (Jan 12, 2025)
 ✓ Comprehensive analytics dashboard implemented with interactive charts and KPI metrics (Aug 5, 2025)
 ✓ Visual analytics system includes monthly trends, category distribution, status tracking, and performance KPIs (Aug 5, 2025)
 ✓ Updated registration system - role selection removed, roles now assigned only by administrator (Aug 5, 2025)
@@ -83,21 +76,21 @@ Contact information: Phone +7 (702) 997 00 94, Email nurbek@creativegroup.kz
 
 # System Architecture
 
-## Frontend Architecture (Pure PHP Implementation)
-- **Framework**: Pure PHP server-side rendering with HTML templates
-- **UI Library**: Tailwind CSS framework for responsive styling and modern design components
-- **Styling**: Tailwind CSS with ХРОМ-KZ brand colors, professional corporate design, and fully responsive layout optimized for all device sizes
-- **Routing**: PHP-based routing system handling both web pages and forms
-- **State Management**: PHP sessions for user state and authentication
-- **Template System**: Direct PHP templating with HTML output
-- **Forms**: Native HTML forms with PHP POST/GET processing
+## Frontend Architecture
+- **Framework**: React 18 with TypeScript for type safety
+- **UI Library**: shadcn/ui components built on Radix UI primitives for accessible, modern interface
+- **Styling**: Tailwind CSS with ХРОМ-KZ brand colors, professional corporate design, and fully responsive layout optimized for all device sizes (mobile-first approach with sm:, md:, lg: breakpoints)
+- **Routing**: Wouter for lightweight client-side routing
+- **State Management**: TanStack Query (React Query) for server state management with optimistic updates
+- **Build Tool**: Vite for fast development and optimized production builds
+- **Charts & Analytics**: Recharts library for interactive data visualization and KPI dashboards
 
 ## Backend Architecture
-- **Framework**: Pure PHP with object-oriented class structure
-- **Authentication**: PHP session-based authentication with bcrypt password hashing
-- **Database Access**: PDO with PostgreSQL for direct database operations
-- **Class Structure**: Dedicated classes for Auth, ShipmentRequest, and UserManager functionality
-- **Error Handling**: PHP try-catch blocks with user-friendly error messages
+- **Framework**: Express.js with TypeScript for RESTful API endpoints
+- **Authentication**: JWT-based authentication with bcrypt for password hashing
+- **Database ORM**: Drizzle ORM for type-safe database operations
+- **API Design**: RESTful endpoints following conventional patterns (/api/auth/*, /api/shipment-requests/*, etc.)
+- **Error Handling**: Centralized error middleware with structured error responses
 
 ## Database Design
 - **Database**: PostgreSQL with connection pooling via Neon serverless
@@ -123,8 +116,8 @@ Contact information: Phone +7 (702) 997 00 94, Email nurbek@creativegroup.kz
 # External Dependencies
 
 - **Database Provider**: Neon serverless PostgreSQL for managed database hosting
-- **PHP Extensions**: PDO, pgsql, json, mbstring, openssl for core functionality
-- **Styling Framework**: Tailwind CSS via CDN for responsive design
-- **Development Environment**: Built-in PHP server for local development
-- **Authentication**: PHP bcrypt functions for secure password hashing
-- **Database Client**: PDO with PostgreSQL driver for database operations
+- **UI Components**: Radix UI primitives for accessible component foundations
+- **Development Tools**: Replit-specific plugins for development environment integration
+- **Build Dependencies**: Vite ecosystem including React plugin and TypeScript support
+- **Authentication**: JWT and bcrypt libraries for secure user management
+- **Database Client**: Neon serverless client with WebSocket support for real-time connections
